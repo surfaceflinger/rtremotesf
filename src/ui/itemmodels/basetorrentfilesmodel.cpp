@@ -323,11 +323,6 @@ namespace tremotesf {
         );
     }
 
-    void BaseTorrentFilesModel::fileRenamed(TorrentFilesModelEntry* entry, const QString& newName) {
-        entry->setName(newName);
-        emit dataChanged(createIndex(entry->row(), 0, entry), createIndex(entry->row(), columnCount() - 1, entry));
-    }
-
     int BaseTorrentFilesModel::columnNumber(Column column) const {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         return indexOfCasted<int>(mColumns, column).value();

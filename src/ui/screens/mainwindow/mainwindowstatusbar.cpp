@@ -56,34 +56,6 @@ namespace tremotesf {
         mStatusLabel = new QLabel(this);
         mLayout->addWidget(mStatusLabel);
 
-        auto altSpeedLimitsButton = new QToolButton(this);
-        altSpeedLimitsButton->setAutoRaise(true);
-        altSpeedLimitsButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        mAltSpeedLimitsAction = altSpeedLimitsButton->addAction(QString{});
-        updateAltSpeedLimitIcon();
-        altSpeedLimitsButton->setDefaultAction(mAltSpeedLimitsAction);
-        mAltSpeedLimitsAction->setCheckable(true);
-        mLayout->addWidget(altSpeedLimitsButton);
-        const auto updateAltSpeedLimitsButton = [=, this] {
-            if (mRpc->serverSettings()->data().alternativeSpeedLimitsEnabled) {
-                mAltSpeedLimitsAction->setChecked(true);
-                mAltSpeedLimitsAction->setText(
-                    qApp->translate("tremotesf", "Alternative speed limits are enabled. Click to disable")
-                );
-            } else {
-                mAltSpeedLimitsAction->setChecked(false);
-                mAltSpeedLimitsAction->setText(
-                    qApp->translate("tremotesf", "Alternative speed limits are disabled. Click to enable")
-                );
-            }
-        };
-        updateAltSpeedLimitsButton();
-        QObject::connect(mRpc->serverSettings(), &ServerSettings::changed, this, updateAltSpeedLimitsButton);
-        QObject::connect(mAltSpeedLimitsAction, &QAction::triggered, this, [=, this](bool checked) {
-            mRpc->serverSettings()->setAlternativeSpeedLimitsEnabled(checked);
-            updateAltSpeedLimitsButton();
-        });
-
         mLayout->addWidget(new StatusBarSeparator(this));
 
         auto downloadSpeedIcon = new IconWidget(QIcon::fromTheme("go-down"_L1), this);
@@ -101,12 +73,6 @@ namespace tremotesf {
 
         auto uploadSpeedLabel = new QLabel(this);
         mLayout->addWidget(uploadSpeedLabel);
-
-        mLayout->addWidget(new StatusBarSeparator(this));
-
-        auto freeSpaceLabel = new QLabel(this);
-        freeSpaceLabel->setContentsMargins(8, 0, 0, 0);
-        mLayout->addWidget(freeSpaceLabel);
 
         updateLayout();
         QObject::connect(mRpc, &Rpc::connectionStateChanged, this, &MainWindowStatusBar::updateLayout);
@@ -137,14 +103,12 @@ namespace tremotesf {
         updateStatusLabels();
         QObject::connect(mRpc, &Rpc::statusChanged, this, &MainWindowStatusBar::updateStatusLabels);
 
-        const auto updateSpeedAndFreeSpaceLabels = [=, this] {
+        const auto updateSpeedLabels = [=, this] {
             downloadSpeedLabel->setText(formatutils::formatByteSpeed(mRpc->serverStats()->downloadSpeed()));
             uploadSpeedLabel->setText(formatutils::formatByteSpeed(mRpc->serverStats()->uploadSpeed()));
-            freeSpaceLabel->setText(qApp->translate("tremotesf", "Free space: %1")
-                                        .arg(formatutils::formatByteSize(mRpc->serverStats()->freeSpace())));
         };
-        updateSpeedAndFreeSpaceLabels();
-        QObject::connect(mRpc->serverStats(), &ServerStats::updated, this, updateSpeedAndFreeSpaceLabels);
+        updateSpeedLabels();
+        QObject::connect(mRpc->serverStats(), &ServerStats::updated, this, updateSpeedLabels);
     }
 
     namespace {
@@ -152,13 +116,6 @@ namespace tremotesf {
             return std::views::iota(layout->indexOf(widget) + 1, layout->count())
                    | std::views::transform([layout](int i) { return layout->itemAt(i)->widget(); });
         }
-    }
-
-    bool MainWindowStatusBar::event(QEvent* event) {
-        if (event->type() == QEvent::PaletteChange) {
-            updateAltSpeedLimitIcon();
-        }
-        return QStatusBar::event(event);
     }
 
     void MainWindowStatusBar::updateLayout() {
@@ -237,14 +194,6 @@ namespace tremotesf {
             mStatusLabel->setToolTip(mRpc->errorMessage());
         } else {
             mStatusLabel->setToolTip({});
-        }
-    }
-
-    void MainWindowStatusBar::updateAltSpeedLimitIcon() {
-        if (isPaletteDark()) {
-            mAltSpeedLimitsAction->setIcon(QIcon(":/turtle-dark.svg"));
-        } else {
-            mAltSpeedLimitsAction->setIcon(QIcon(":/turtle.svg"));
         }
     }
 

@@ -292,8 +292,7 @@ namespace tremotesf {
         layout->addWidget(labelsListView);
 
         QObject::connect(rpc, &Rpc::connectedChanged, this, [=] {
-            const bool serverSupportsLabels =
-                rpc->isConnected() ? rpc->serverSettings()->data().hasLabelsProperty() : true;
+            const bool serverSupportsLabels = true;
             if (serverSupportsLabels) {
                 labelsCheckBox->setVisible(true);
                 labelsListView->setVisible(labelsCheckBox->isChecked());

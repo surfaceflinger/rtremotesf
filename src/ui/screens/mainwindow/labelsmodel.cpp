@@ -97,8 +97,7 @@ namespace tremotesf {
 
     void LabelsModel::update() {
         std::map<QString, int> labels{};
-        const bool serverSupportsLabels =
-            rpc()->isConnected() ? rpc()->serverSettings()->data().hasLabelsProperty() : true;
+        const bool serverSupportsLabels = true;
         if (serverSupportsLabels) {
             labels.emplace(QString(), rpc()->torrentsCount());
             for (const auto& torrent : rpc()->torrents()) {

@@ -112,8 +112,6 @@ namespace tremotesf {
                   {Column::Name, Column::Size, Column::ProgressBar, Column::Progress, Column::Priority}
               ) {}
 
-        void renameFile(const QModelIndex&, const QString&) override {}
-
         struct File {
             QString path;
             qint64 size;

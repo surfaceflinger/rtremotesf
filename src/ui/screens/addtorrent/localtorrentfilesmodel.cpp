@@ -91,11 +91,4 @@ namespace tremotesf {
         return files;
     }
 
-    const std::map<QString, QString>& LocalTorrentFilesModel::renamedFiles() const { return mRenamedFiles; }
-
-    void LocalTorrentFilesModel::renameFile(const QModelIndex& index, const QString& newName) {
-        auto entry = static_cast<TorrentFilesModelEntry*>(index.internalPointer());
-        mRenamedFiles.emplace(entry->path(), newName);
-        fileRenamed(entry, newName);
-    }
 }

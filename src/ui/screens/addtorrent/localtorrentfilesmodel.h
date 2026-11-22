@@ -31,14 +31,8 @@ namespace tremotesf {
         std::vector<int> highPriorityFiles() const;
         std::vector<int> lowPriorityFiles() const;
 
-        const std::map<QString, QString>& renamedFiles() const;
-
-        void renameFile(const QModelIndex& index, const QString& newName) override;
-
     private:
         bool mLoaded{};
-
-        std::map<QString, QString> mRenamedFiles{};
     };
 }
 

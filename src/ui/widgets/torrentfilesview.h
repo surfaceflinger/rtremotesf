@@ -25,10 +25,6 @@ namespace tremotesf {
         ~TorrentFilesView() override = default;
         Q_DISABLE_COPY_MOVE(TorrentFilesView)
 
-        static void showFileRenameDialog(
-            const QString& fileName, QWidget* parent, const std::function<void(const QString&)>& onAccepted
-        );
-
         void saveState();
 
     private:

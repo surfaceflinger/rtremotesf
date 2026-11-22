@@ -17,13 +17,11 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QIcon>
-#include <QItemSelectionModel>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
-#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRegularExpressionValidator>
 #include <QScrollArea>
@@ -32,13 +30,12 @@
 #include <QVBoxLayout>
 
 #include "fileutils.h"
-#include "log/log.h"
 #include "rpc/pathutils.h"
+#include "rpc/servers.h"
+#include "serversmodel.h"
 #include "stdutils.h"
 #include "target_os.h"
 #include "ui/widgets/tooltipwhenelideddelegate.h"
-#include "rpc/servers.h"
-#include "serversmodel.h"
 
 using namespace Qt::StringLiterals;
 
@@ -59,76 +56,7 @@ namespace tremotesf {
             }
             return proxyTypeComboBoxValues.at(static_cast<size_t>(index));
         }
-
-        constexpr std::array serverCertificateModeComboBoxValues{
-            ConnectionConfiguration::ServerCertificateMode::None,
-            ConnectionConfiguration::ServerCertificateMode::SelfSigned,
-            ConnectionConfiguration::ServerCertificateMode::CustomRoot
-        };
-
-        ConnectionConfiguration::ServerCertificateMode serverCertificateModeFromComboBoxIndex(int index) {
-            if (index == -1) {
-                return ConnectionConfiguration::ServerCertificateMode::None;
-            }
-            return serverCertificateModeComboBoxValues.at(static_cast<size_t>(index));
-        }
     }
-
-    class CertificateTextField final : public QWidget {
-        Q_OBJECT
-    public:
-        explicit CertificateTextField(const QString& labelText = {}, QWidget* parent = nullptr) : QWidget(parent) {
-            auto layout = new QVBoxLayout(this);
-            layout->setContentsMargins({});
-
-            layout->addWidget(&label);
-            layout->addWidget(&textEdit);
-            layout->addWidget(&mLoadFromFileButton);
-
-            label.setText(labelText);
-            textEdit.setMinimumHeight(192);
-
-            QObject::connect(
-                &mLoadFromFileButton,
-                &QPushButton::clicked,
-                this,
-                &CertificateTextField::loadCertificateFromFile
-            );
-        }
-
-        QLabel label;
-        QPlainTextEdit textEdit;
-
-    private:
-        void loadCertificateFromFile() {
-            auto* fileDialog = new QFileDialog(
-                nativeParentWidget(),
-                //: File chooser dialog title
-                qApp->translate("tremotesf", "Select Files")
-            );
-            fileDialog->setAttribute(Qt::WA_DeleteOnClose);
-            fileDialog->setFileMode(QFileDialog::ExistingFile);
-            fileDialog->setMimeTypeFilters({"application/x-pem-file"_L1});
-
-            QObject::connect(fileDialog, &QFileDialog::accepted, this, [=, this] {
-                try {
-                    textEdit.setPlainText(readFile(fileDialog->selectedFiles().constFirst()));
-                } catch (const QFileError& e) {
-                    warning().logWithException(e, "Failed to read certificate from file");
-                }
-            });
-
-            if constexpr (targetOs == TargetOs::Windows) {
-                fileDialog->open();
-            } else {
-                fileDialog->show();
-            }
-        }
-
-        QPushButton mLoadFromFileButton{//: Button
-                                        qApp->translate("tremotesf", "Load from file...")
-        };
-    };
 
     class MountedDirectoriesWidget final : public QTableWidget {
         Q_OBJECT
@@ -233,26 +161,14 @@ namespace tremotesf {
             //: Dialog title
             setWindowTitle(qApp->translate("tremotesf", "Add Server"));
 
-            mPortSpinBox->setValue(9091);
-            mApiPathLineEdit->setText("/transmission/rpc"_L1);
+            mPortSpinBox->setValue(5000);
             mProxyTypeComboBox->setCurrentIndex(
                 // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
                 indexOfCasted<int>(proxyTypeComboBoxValues, ConnectionConfiguration::ProxyType::Default).value()
             );
-            mHttpsGroupBox->setChecked(false);
-            mServerCertificateModeComboBox->setCurrentIndex(
-                // NOLINTBEGIN(bugprone-unchecked-optional-access)
-                indexOfCasted<int>(
-                    serverCertificateModeComboBoxValues,
-                    ConnectionConfiguration::ServerCertificateMode::None
-                )
-                    .value()
-                // NOLINTEND(bugprone-unchecked-optional-access)
-            );
-            mAuthenticationGroupBox->setChecked(false);
             mUpdateIntervalSpinBox->setValue(5);
             mTimeoutSpinBox->setValue(30);
-            mAutoReconnectGroupBox->setChecked(false);
+            mAutoReconnectCheckBox->setChecked(false);
             mAutoReconnectSpinBox->setValue(30);
         } else {
             const Server& server = mServersModel->servers().at(static_cast<size_t>(row));
@@ -263,7 +179,7 @@ namespace tremotesf {
             mNameLineEdit->setText(mServerName);
             mAddressLineEdit->setText(server.connectionConfiguration.address);
             mPortSpinBox->setValue(server.connectionConfiguration.port);
-            mApiPathLineEdit->setText(server.connectionConfiguration.apiPath);
+            mSocketPathLineEdit->setText(server.connectionConfiguration.socketPath);
 
             mProxyTypeComboBox->setCurrentIndex(
                 // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
@@ -274,29 +190,10 @@ namespace tremotesf {
             mProxyUserLineEdit->setText(server.connectionConfiguration.proxyUser);
             mProxyPasswordLineEdit->setText(server.connectionConfiguration.proxyPassword);
 
-            mHttpsGroupBox->setChecked(server.connectionConfiguration.https);
-            mServerCertificateModeComboBox->setCurrentIndex(
-                // NOLINTBEGIN(bugprone-unchecked-optional-access)
-                indexOfCasted<int>(
-                    serverCertificateModeComboBoxValues,
-                    server.connectionConfiguration.serverCertificateMode
-                )
-                    .value()
-                // NOLINTEND(bugprone-unchecked-optional-access)
-            );
-            mServerRootCertificateField->textEdit.setPlainText(server.connectionConfiguration.serverRootCertificate);
-            mServerLeafCertificateField->textEdit.setPlainText(server.connectionConfiguration.serverLeafCertificate);
-            mClientCertificateCheckBox->setChecked(server.connectionConfiguration.clientCertificateEnabled);
-            mClientCertificateField->textEdit.setPlainText(server.connectionConfiguration.clientCertificate);
-
-            mAuthenticationGroupBox->setChecked(server.connectionConfiguration.authentication);
-            mUsernameLineEdit->setText(server.connectionConfiguration.username);
-            mPasswordLineEdit->setText(server.connectionConfiguration.password);
-
             mUpdateIntervalSpinBox->setValue(server.connectionConfiguration.updateInterval);
             mTimeoutSpinBox->setValue(server.connectionConfiguration.timeout);
 
-            mAutoReconnectGroupBox->setChecked(server.connectionConfiguration.autoReconnectEnabled);
+            mAutoReconnectCheckBox->setChecked(server.connectionConfiguration.autoReconnectEnabled);
             mAutoReconnectSpinBox->setValue(server.connectionConfiguration.autoReconnectInterval);
 
             for (const auto& [localDirectory, remoteDirectory] : server.mountedDirectories) {
@@ -356,10 +253,19 @@ namespace tremotesf {
         mPortSpinBox = new QSpinBox(this);
         const int maxPort = 65535;
         mPortSpinBox->setMaximum(maxPort);
-        formLayout->addRow(qApp->translate("tremotesf", "Port:"), mPortSpinBox);
+        formLayout->addRow(qApp->translate("tremotesf", "SCGI port:"), mPortSpinBox);
 
-        mApiPathLineEdit = new QLineEdit(this);
-        formLayout->addRow(qApp->translate("tremotesf", "API path:"), mApiPathLineEdit);
+        mSocketPathLineEdit = new QLineEdit(this);
+        formLayout->addRow(qApp->translate("tremotesf", "Unix socket (optional):"), mSocketPathLineEdit);
+        auto socketPathNotice = new QLabel(
+            qApp->translate(
+                "tremotesf",
+                "If set, rtremotesf will connect to rtorrent's SCGI Unix socket and ignore the address and port"
+            ),
+            this
+        );
+        socketPathNotice->setWordWrap(true);
+        formLayout->addRow(socketPathNotice);
 
         auto proxyGroupBox = new QGroupBox(qApp->translate("tremotesf", "Proxy"), this);
         auto proxyLayout = new QFormLayout(proxyGroupBox);
@@ -422,117 +328,6 @@ namespace tremotesf {
         };
         QObject::connect(mProxyTypeComboBox, &QComboBox::currentTextChanged, this, updateProxyFieldsVisibility);
 
-        mHttpsGroupBox = new QGroupBox(qApp->translate("tremotesf", "HTTPS"), this);
-        mHttpsGroupBox->setCheckable(true);
-
-        auto httpsGroupBoxLayout = new QFormLayout(mHttpsGroupBox);
-        httpsGroupBoxLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-
-        mServerCertificateModeComboBox = new QComboBox(this);
-        mServerCertificateModeComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        for (const auto type : serverCertificateModeComboBoxValues) {
-            switch (type) {
-            case ConnectionConfiguration::ServerCertificateMode::None:
-                //: Server does not use custom certificates
-                mServerCertificateModeComboBox->addItem(qApp->translate("tremotesf", "No"));
-                break;
-            case ConnectionConfiguration::ServerCertificateMode::SelfSigned:
-                mServerCertificateModeComboBox->addItem(qApp->translate("tremotesf", "Self-signed certificate"));
-                break;
-            case ConnectionConfiguration::ServerCertificateMode::CustomRoot:
-                mServerCertificateModeComboBox->addItem(qApp->translate("tremotesf", "Custom CA root certificate"));
-                break;
-            }
-        }
-
-        httpsGroupBoxLayout->addRow(
-            qApp->translate("tremotesf", "Server uses custom certificates:"),
-            mServerCertificateModeComboBox
-        );
-
-        mServerRootCertificateField = new CertificateTextField({}, this);
-        httpsGroupBoxLayout->addRow(mServerRootCertificateField);
-
-        auto serverLeafCertificateNotice = new QLabel(
-            qApp->translate(
-                "tremotesf",
-                "If server's leaf certificate does not have correct host name, you need to provide it too for "
-                "certificate validation to pass"
-            ),
-            this
-        );
-        serverLeafCertificateNotice->setWordWrap(true);
-        httpsGroupBoxLayout->addRow(serverLeafCertificateNotice);
-
-        mServerLeafCertificateField =
-            new CertificateTextField(qApp->translate("tremotesf", "Server's leaf certificate in PEM format:"), this);
-        httpsGroupBoxLayout->addRow(mServerLeafCertificateField);
-
-        const auto updateServerCertificateFieldsState = [=, this] {
-            switch (serverCertificateModeFromComboBoxIndex(mServerCertificateModeComboBox->currentIndex())) {
-            case ConnectionConfiguration::ServerCertificateMode::SelfSigned:
-                mServerRootCertificateField->label.setText(
-                    qApp->translate("tremotesf", "Server's leaf certificate in PEM format:")
-                );
-                mServerRootCertificateField->show();
-                serverLeafCertificateNotice->hide();
-                mServerLeafCertificateField->hide();
-                break;
-            case ConnectionConfiguration::ServerCertificateMode::CustomRoot:
-                mServerRootCertificateField->label.setText(
-                    qApp->translate("tremotesf", "Server's CA root certificate in PEM format:")
-                );
-                mServerRootCertificateField->show();
-                serverLeafCertificateNotice->show();
-                mServerLeafCertificateField->show();
-                break;
-            case ConnectionConfiguration::ServerCertificateMode::None:
-            default:
-                mServerRootCertificateField->hide();
-                serverLeafCertificateNotice->hide();
-                mServerLeafCertificateField->hide();
-                break;
-            }
-        };
-
-        QObject::connect(
-            mServerCertificateModeComboBox,
-            &QComboBox::currentTextChanged,
-            this,
-            updateServerCertificateFieldsState
-        );
-
-        mClientCertificateCheckBox = new QCheckBox(
-            //: Check box label
-            qApp->translate("tremotesf", "Use client certificate authentication"),
-            this
-        );
-        httpsGroupBoxLayout->addRow(mClientCertificateCheckBox);
-        mClientCertificateField = new CertificateTextField(
-            qApp->translate("tremotesf", "Client certificate with private key in PEM format:"),
-            this
-        );
-        httpsGroupBoxLayout->addRow(mClientCertificateField);
-
-        const auto updateClientCertificateFieldVisibility = [this] {
-            mClientCertificateField->setVisible(mClientCertificateCheckBox->isChecked());
-        };
-        QObject::connect(mClientCertificateCheckBox, &QCheckBox::toggled, this, updateClientCertificateFieldVisibility);
-
-        formLayout->addRow(mHttpsGroupBox);
-
-        //: Check box label
-        mAuthenticationGroupBox = new QGroupBox(qApp->translate("tremotesf", "Authentication"), this);
-        mAuthenticationGroupBox->setCheckable(true);
-        auto authenticationGroupBoxLayout = new QFormLayout(mAuthenticationGroupBox);
-        authenticationGroupBoxLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-        mUsernameLineEdit = new QLineEdit(this);
-        authenticationGroupBoxLayout->addRow(qApp->translate("tremotesf", "Username:"), mUsernameLineEdit);
-        mPasswordLineEdit = new QLineEdit(this);
-        mPasswordLineEdit->setEchoMode(QLineEdit::Password);
-        authenticationGroupBoxLayout->addRow(qApp->translate("tremotesf", "Password:"), mPasswordLineEdit);
-        formLayout->addRow(mAuthenticationGroupBox);
-
         mUpdateIntervalSpinBox = new QSpinBox(this);
         mUpdateIntervalSpinBox->setMinimum(1);
         mUpdateIntervalSpinBox->setMaximum(3600);
@@ -547,21 +342,15 @@ namespace tremotesf {
         mTimeoutSpinBox->setSuffix(qApp->translate("tremotesf", " s"));
         formLayout->addRow(qApp->translate("tremotesf", "Timeout:"), mTimeoutSpinBox);
 
-        //: Check box label
-        mAutoReconnectGroupBox = new QGroupBox(qApp->translate("tremotesf", "Auto reconnect on error"), this);
-        mAutoReconnectGroupBox->setCheckable(true);
-        formLayout->addRow(mAutoReconnectGroupBox);
-        auto* autoReconnectFormLayout = new QFormLayout(mAutoReconnectGroupBox);
-        autoReconnectFormLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+        mAutoReconnectCheckBox = new QCheckBox(qApp->translate("tremotesf", "Auto reconnect on error"), this);
+        formLayout->addRow(mAutoReconnectCheckBox);
         mAutoReconnectSpinBox = new QSpinBox(this);
         mAutoReconnectSpinBox->setMinimum(1);
         mAutoReconnectSpinBox->setMaximum(3600);
         //: Suffix that is added to input field with number of seconds, e.g. "30 s"
         mAutoReconnectSpinBox->setSuffix(qApp->translate("tremotesf", " s"));
-        autoReconnectFormLayout->addRow(
-            qApp->translate("tremotesf", "Auto reconnect interval:"),
-            mAutoReconnectSpinBox
-        );
+        formLayout->addRow(qApp->translate("tremotesf", "Auto reconnect interval:"), mAutoReconnectSpinBox);
+        QObject::connect(mAutoReconnectCheckBox, &QCheckBox::toggled, mAutoReconnectSpinBox, &QSpinBox::setEnabled);
 
         auto mountedDirectoriesGroupBox = new QGroupBox(qApp->translate("tremotesf", "Mounted directories"), this);
         auto mountedDirectoriesLayout = new QGridLayout(mountedDirectoriesGroupBox);
@@ -604,16 +393,17 @@ namespace tremotesf {
         topLayout->addWidget(dialogButtonBox);
 
         const auto updateAcceptButtonState = [=, this] {
-            dialogButtonBox->button(QDialogButtonBox::Ok)
-                ->setEnabled(mNameLineEdit->hasAcceptableInput() && mAddressLineEdit->hasAcceptableInput());
+            const bool hasTarget =
+                !mSocketPathLineEdit->text().trimmed().isEmpty() || mAddressLineEdit->hasAcceptableInput();
+            dialogButtonBox->button(QDialogButtonBox::Ok)->setEnabled(mNameLineEdit->hasAcceptableInput() && hasTarget);
         };
         QObject::connect(mNameLineEdit, &QLineEdit::textChanged, this, updateAcceptButtonState);
         QObject::connect(mAddressLineEdit, &QLineEdit::textChanged, this, updateAcceptButtonState);
+        QObject::connect(mSocketPathLineEdit, &QLineEdit::textChanged, this, updateAcceptButtonState);
 
         return [=] {
             updateProxyFieldsVisibility();
-            updateServerCertificateFieldsState();
-            updateClientCertificateFieldVisibility();
+            mAutoReconnectSpinBox->setEnabled(mAutoReconnectCheckBox->isChecked());
             updateAcceptButtonState();
         };
     }
@@ -634,7 +424,7 @@ namespace tremotesf {
         ConnectionConfiguration connectionConfiguration{
             .address = mAddressLineEdit->text(),
             .port = mPortSpinBox->value(),
-            .apiPath = mApiPathLineEdit->text(),
+            .socketPath = mSocketPathLineEdit->text().trimmed(),
 
             .proxyType = proxyTypeFromComboBoxIndex(mProxyTypeComboBox->currentIndex()),
             .proxyHostname = mProxyHostnameLineEdit->text(),
@@ -642,24 +432,10 @@ namespace tremotesf {
             .proxyUser = mProxyUserLineEdit->text(),
             .proxyPassword = mProxyPasswordLineEdit->text(),
 
-            .https = mHttpsGroupBox->isChecked(),
-
-            .serverCertificateMode =
-                serverCertificateModeFromComboBoxIndex(mServerCertificateModeComboBox->currentIndex()),
-            .serverRootCertificate = mServerRootCertificateField->textEdit.toPlainText().toUtf8(),
-            .serverLeafCertificate = mServerLeafCertificateField->textEdit.toPlainText().toUtf8(),
-
-            .clientCertificateEnabled = mClientCertificateCheckBox->isChecked(),
-            .clientCertificate = mClientCertificateField->textEdit.toPlainText().toUtf8(),
-
-            .authentication = mAuthenticationGroupBox->isChecked(),
-            .username = mUsernameLineEdit->text(),
-            .password = mPasswordLineEdit->text(),
-
             .updateInterval = mUpdateIntervalSpinBox->value(),
             .timeout = mTimeoutSpinBox->value(),
 
-            .autoReconnectEnabled = mAutoReconnectGroupBox->isChecked(),
+            .autoReconnectEnabled = mAutoReconnectCheckBox->isChecked(),
             .autoReconnectInterval = mAutoReconnectSpinBox->value(),
         };
 

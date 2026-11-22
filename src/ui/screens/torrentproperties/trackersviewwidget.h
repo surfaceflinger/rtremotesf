@@ -31,8 +31,6 @@ namespace tremotesf {
 
     private:
         void addTrackers();
-        void showEditDialogs();
-        void removeTrackers();
 
         Torrent* mTorrent{};
         Rpc* mRpc{};

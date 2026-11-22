@@ -36,7 +36,7 @@ namespace tremotesf {
         return {
             .downloadDirectory = serverSettings->data().downloadDirectory,
             .priority = TorrentData::Priority::Normal,
-            .startAfterAdding = serverSettings->data().startAddedTorrents,
+            .startAfterAdding = true,
             .deleteTorrentFile = false,
             .moveTorrentFileToTrash = true
         };

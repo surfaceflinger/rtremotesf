@@ -8,16 +8,13 @@
 #include <functional>
 #include <QDialog>
 
-class QCheckBox;
 class QComboBox;
+class QCheckBox;
 class QDialogButtonBox;
-class QFormLayout;
-class QGroupBox;
 class QLineEdit;
 class QSpinBox;
 
 namespace tremotesf {
-    class CertificateTextField;
     class MountedDirectoriesWidget;
     class ServersModel;
 
@@ -38,7 +35,7 @@ namespace tremotesf {
         QLineEdit* mNameLineEdit = nullptr;
         QLineEdit* mAddressLineEdit = nullptr;
         QSpinBox* mPortSpinBox = nullptr;
-        QLineEdit* mApiPathLineEdit = nullptr;
+        QLineEdit* mSocketPathLineEdit = nullptr;
 
         QComboBox* mProxyTypeComboBox = nullptr;
         QLineEdit* mProxyHostnameLineEdit = nullptr;
@@ -46,23 +43,11 @@ namespace tremotesf {
         QLineEdit* mProxyUserLineEdit = nullptr;
         QLineEdit* mProxyPasswordLineEdit = nullptr;
 
-        QGroupBox* mHttpsGroupBox = nullptr;
-
-        QComboBox* mServerCertificateModeComboBox = nullptr;
-        CertificateTextField* mServerRootCertificateField = nullptr;
-        CertificateTextField* mServerLeafCertificateField = nullptr;
-        QCheckBox* mClientCertificateCheckBox = nullptr;
-        CertificateTextField* mClientCertificateField = nullptr;
-
-        QGroupBox* mAuthenticationGroupBox = nullptr;
-        QLineEdit* mUsernameLineEdit = nullptr;
-        QLineEdit* mPasswordLineEdit = nullptr;
-
         QSpinBox* mUpdateIntervalSpinBox = nullptr;
         QSpinBox* mTimeoutSpinBox = nullptr;
 
-        QGroupBox* mAutoReconnectGroupBox = nullptr;
         QSpinBox* mAutoReconnectSpinBox = nullptr;
+        QCheckBox* mAutoReconnectCheckBox = nullptr;
 
         MountedDirectoriesWidget* mMountedDirectoriesWidget = nullptr;
 

@@ -77,7 +77,6 @@ namespace tremotesf {
         resetTree();
         if (mTorrent) {
             QObject::connect(mTorrent, &Torrent::filesUpdated, this, &TorrentFilesModel::update);
-            QObject::connect(mTorrent, &Torrent::fileRenamed, this, &TorrentFilesModel::fileRenamed);
             if (mTorrent->isFilesEnabled()) {
                 warning().log("{} already has enabled files, this shouldn't happen", *mTorrent);
             }
@@ -101,36 +100,13 @@ namespace tremotesf {
         mTorrent->setFilesPriority(idsFromIndexes(indexes), TorrentFilesModelEntry::toFilePriority(priority));
     }
 
-    void TorrentFilesModel::renameFile(const QModelIndex& index, const QString& newName) {
-        mTorrent->renameFile(static_cast<const TorrentFilesModelEntry*>(index.internalPointer())->path(), newName);
-    }
-
-    void TorrentFilesModel::fileRenamed(const QString& path, const QString& newName) {
-        if (!mLoaded || !mRootEntry) {
-            return;
-        }
-        TorrentFilesModelEntry* entry = mRootEntry.get();
-        const auto parts = path.split('/', Qt::SkipEmptyParts);
-        for (const QString& part : parts) {
-            if (!entry->isDirectory()) return;
-            auto& children = static_cast<TorrentFilesModelEntry*>(entry)->children();
-            const auto found = std::ranges::find(children, part, &TorrentFilesModelEntry::name);
-            if (found == children.end()) return;
-            entry = &*found;
-        }
-        BaseTorrentFilesModel::fileRenamed(entry, newName);
-    }
-
     QString TorrentFilesModel::localFilePath(const QModelIndex& index) const {
         if (!index.isValid()) {
-            return localTorrentDownloadDirectoryPath(mRpc, mTorrent);
+            return localTorrentRootDirectoryPath(mRpc, mTorrent);
         }
         const auto* entry = static_cast<const TorrentFilesModelEntry*>(index.internalPointer());
         QString path(entry->path());
-        if (!entry->isDirectory() && entry->progress() < 1 && mRpc->serverSettings()->data().renameIncompleteFiles) {
-            path += ".part"_L1;
-        }
-        return localTorrentDownloadDirectoryPath(mRpc, mTorrent) % '/' % path;
+        return localTorrentRootDirectoryPath(mRpc, mTorrent) % '/' % path;
     }
 
     bool TorrentFilesModel::isWanted(const QModelIndex& index) const {

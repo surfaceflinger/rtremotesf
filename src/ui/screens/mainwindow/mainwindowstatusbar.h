@@ -22,15 +22,11 @@ namespace tremotesf {
     public:
         explicit MainWindowStatusBar(const Rpc* rpc, QWidget* parent = nullptr);
 
-    protected:
-        bool event(QEvent* event) override;
-
     private:
         void updateLayout();
         void updateServerText();
         void updateServerMenu();
         void updateStatusLabels();
-        void updateAltSpeedLimitIcon();
 
         const Rpc* mRpc{};
         QLayout* mLayout{};
@@ -39,7 +35,6 @@ namespace tremotesf {
         QWidget* mServerSpacer{};
         StatusBarSeparator* mFirstSeparator{};
         QLabel* mStatusLabel{};
-        QAction* mAltSpeedLimitsAction{};
 
     signals:
         void showConnectionSettingsDialog();

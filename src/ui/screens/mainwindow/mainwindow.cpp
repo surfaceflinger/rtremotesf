@@ -83,67 +83,6 @@ SPECIALIZE_FORMATTER_FOR_QDEBUG(QRect)
 
 namespace tremotesf {
     namespace {
-        class SetLocationDialog final : public QDialog {
-            Q_OBJECT
-
-        public:
-            explicit SetLocationDialog(const QString& downloadDirectory, Rpc* rpc, QWidget* parent = nullptr)
-                : QDialog(parent),
-                  mDirectoryWidget(new TorrentDownloadDirectoryDirectorySelectionWidget(this)),
-                  mMoveFilesCheckBox(
-                      //: Check box label
-                      new QCheckBox(qApp->translate("tremotesf", "Move files from current directory"), this)
-                  ) {
-                //: Dialog title for changing torrent's download directory
-                setWindowTitle(qApp->translate("tremotesf", "Set Location"));
-
-                auto layout = new QVBoxLayout(this);
-                layout->setSizeConstraint(QLayout::SetMinAndMaxSize);
-
-                auto label = new QLabel(qApp->translate("tremotesf", "Download directory:"), this);
-                label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-                layout->addWidget(label);
-
-                mDirectoryWidget->setup(downloadDirectory, rpc);
-                mDirectoryWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-                layout->addWidget(mDirectoryWidget);
-
-                mMoveFilesCheckBox->setChecked(true);
-                layout->addWidget(mMoveFilesCheckBox);
-
-                auto dialogButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-                QObject::connect(dialogButtonBox, &QDialogButtonBox::accepted, this, [this] { accept(); });
-                QObject::connect(dialogButtonBox, &QDialogButtonBox::rejected, this, &SetLocationDialog::reject);
-
-                QObject::connect(
-                    mDirectoryWidget,
-                    &RemoteDirectorySelectionWidget::pathChanged,
-                    this,
-                    [dialogButtonBox, this] {
-                        dialogButtonBox->button(QDialogButtonBox::Ok)->setEnabled(!mDirectoryWidget->path().isEmpty());
-                    }
-                );
-
-                layout->addWidget(dialogButtonBox);
-
-                QObject::connect(rpc, &Rpc::connectedChanged, this, [rpc, this] {
-                    if (!rpc->isConnected()) {
-                        reject();
-                    }
-                });
-
-                resize(sizeHint().expandedTo(QSize(720, 0)));
-            }
-
-            [[nodiscard]] QString downloadDirectory() const { return mDirectoryWidget->path(); }
-
-            [[nodiscard]] bool moveFiles() const { return mMoveFilesCheckBox->isChecked(); }
-
-        private:
-            TorrentDownloadDirectoryDirectorySelectionWidget* const mDirectoryWidget;
-            QCheckBox* const mMoveFilesCheckBox;
-        };
-
 #ifndef Q_OS_MACOS
         bool isAllowedToHide(const QWidget* window) {
             static constexpr std::array classNames{
@@ -361,12 +300,12 @@ namespace tremotesf {
         void updateShowHideAction() {
             QObject::disconnect(&mShowHideAppAction, &QAction::triggered, nullptr, nullptr);
             if (isMainWindowHiddenOrMinimized()) {
-                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Show Tremotesf"));
+                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Show rtremotesf"));
                 QObject::connect(&mShowHideAppAction, &QAction::triggered, this, [this] {
                     showWindowsOrActivateMainWindow();
                 });
             } else {
-                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Hide Tremotesf"));
+                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Hide rtremotesf"));
                 QObject::connect(&mShowHideAppAction, &QAction::triggered, this, [this] { hideWindows(); });
             }
         }
@@ -442,8 +381,6 @@ namespace tremotesf {
         QAction* mStartTorrentNowAction{};
         QAction* mPauseTorrentAction{};
         QAction* mRemoveTorrentAction{};
-
-        QAction* mRenameTorrentAction{};
 
         QAction* mOpenTorrentFilesAction{};
         QAction* mOpenTorrentDownloadDirectoryAction{};
@@ -590,52 +527,6 @@ namespace tremotesf {
                 removeSelectedTorrents(true);
             });
 
-            const auto* const setLocationAction = mTorrentMenu->addAction(
-                QIcon::fromTheme("mark-location"_L1),
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "Set &Location")
-            );
-            QObject::connect(setLocationAction, &QAction::triggered, this, [this] {
-                if (mTorrentsView.selectionModel()->hasSelection()) {
-                    QModelIndexList indexes(
-                        mTorrentsProxyModel.sourceIndexes(mTorrentsView.selectionModel()->selectedRows())
-                    );
-                    auto dialog = new SetLocationDialog(
-                        mTorrentsModel.torrentAtIndex(indexes.first())->data().downloadDirectory,
-                        mViewModel.rpc(),
-                        mWindow
-                    );
-                    dialog->setAttribute(Qt::WA_DeleteOnClose);
-                    QObject::connect(dialog, &SetLocationDialog::accepted, this, [indexes, dialog, this] {
-                        mViewModel.rpc()->setTorrentsLocation(
-                            mTorrentsModel.idsFromIndexes(indexes),
-                            dialog->downloadDirectory(),
-                            dialog->moveFiles()
-                        );
-                    });
-                    dialog->show();
-                }
-            });
-
-            mRenameTorrentAction = mTorrentMenu->addAction(
-                QIcon::fromTheme("edit-rename"_L1),
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "&Rename")
-            );
-            mRenameTorrentAction->setShortcut(Qt::Key_F2);
-            QObject::connect(mRenameTorrentAction, &QAction::triggered, this, [this] {
-                const auto indexes = mTorrentsView.selectionModel()->selectedRows();
-                if (indexes.size() == 1) {
-                    const auto torrent =
-                        mTorrentsModel.torrentAtIndex(mTorrentsProxyModel.mapToSource(indexes.first()));
-                    const auto id = torrent->data().id;
-                    const auto name = torrent->data().name;
-                    TorrentFilesView::showFileRenameDialog(name, mWindow, [id, name, this](const auto& newName) {
-                        mViewModel.rpc()->renameTorrentFile(id, name, newName);
-                    });
-                }
-            });
-
             const auto* const editLabelsAction = mTorrentMenu->addAction(
                 QIcon::fromTheme("tag"_L1),
                 //: Torrent's context menu item
@@ -701,55 +592,6 @@ namespace tremotesf {
             });
 
             mTorrentMenu->addSeparator();
-
-            auto* const queueMenu = mTorrentMenu->addMenu(
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "&Queue")
-            );
-
-            const auto* const moveTorrentToTopAction = queueMenu->addAction(
-                QIcon::fromTheme("go-top"_L1),
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "Move To &Top")
-            );
-            QObject::connect(moveTorrentToTopAction, &QAction::triggered, this, [this] {
-                mViewModel.rpc()->moveTorrentsToTop(mTorrentsModel.idsFromIndexes(
-                    mTorrentsProxyModel.sourceIndexes(mTorrentsView.selectionModel()->selectedRows())
-                ));
-            });
-
-            const auto* const moveTorrentUpAction = queueMenu->addAction(
-                QIcon::fromTheme("go-up"_L1),
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "Move &Up")
-            );
-            QObject::connect(moveTorrentUpAction, &QAction::triggered, this, [this] {
-                mViewModel.rpc()->moveTorrentsUp(mTorrentsModel.idsFromIndexes(
-                    mTorrentsProxyModel.sourceIndexes(mTorrentsView.selectionModel()->selectedRows())
-                ));
-            });
-
-            const auto* const moveTorrentDownAction = queueMenu->addAction(
-                QIcon::fromTheme("go-down"_L1),
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "Move &Down")
-            );
-            QObject::connect(moveTorrentDownAction, &QAction::triggered, this, [this] {
-                mViewModel.rpc()->moveTorrentsDown(mTorrentsModel.idsFromIndexes(
-                    mTorrentsProxyModel.sourceIndexes(mTorrentsView.selectionModel()->selectedRows())
-                ));
-            });
-
-            const auto* const moveTorrentToBottomAction = queueMenu->addAction(
-                QIcon::fromTheme("go-bottom"_L1),
-                //: Torrent's context menu item
-                qApp->translate("tremotesf", "Move To &Bottom")
-            );
-            QObject::connect(moveTorrentToBottomAction, &QAction::triggered, this, [this] {
-                mViewModel.rpc()->moveTorrentsToBottom(mTorrentsModel.idsFromIndexes(
-                    mTorrentsProxyModel.sourceIndexes(mTorrentsView.selectionModel()->selectedRows())
-                ));
-            });
 
             const auto priorityMenu = mTorrentMenu->addMenu(
                 //: Torrent's context menu item
@@ -956,7 +798,9 @@ namespace tremotesf {
                     break;
                 }
             } else {
-                mRenameTorrentAction->setEnabled(false);
+                mHighPriorityAction->setChecked(false);
+                mNormalPriorityAction->setChecked(false);
+                mLowPriorityAction->setChecked(false);
             }
 
             bool localOrMounted = true;
@@ -1329,7 +1173,7 @@ namespace tremotesf {
                     QMessageBox::Warning,
                     //: Dialog title
                     qApp->translate("tremotesf", "Shutdown Server"),
-                    qApp->translate("tremotesf", "Are you sure you want to shutdown remote Transmission instance?"),
+                    qApp->translate("tremotesf", "Are you sure you want to shutdown remote rtorrent instance?"),
                     QMessageBox::Cancel | QMessageBox::Ok,
                     mWindow
                 );

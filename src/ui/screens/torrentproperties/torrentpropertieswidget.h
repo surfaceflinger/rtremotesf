@@ -32,7 +32,6 @@ namespace tremotesf {
     private:
         void setupDetailsTab(bool horizontal);
         void setupPeersTab();
-        void setupWebSeedersTab();
         void setupLimitsTab();
 
         void setTorrent(Torrent* torrent, bool oldTorrentDestroyed);
@@ -46,7 +45,6 @@ namespace tremotesf {
         TrackersViewWidget* mTrackersViewWidget{};
         QTreeView* mPeersView{};
         PeersModel* mPeersModel{};
-        StringListModel* mWebSeedersModel{};
 
         bool mUpdatingLimits{};
         std::function<void()> mUpdateLimitsTab;

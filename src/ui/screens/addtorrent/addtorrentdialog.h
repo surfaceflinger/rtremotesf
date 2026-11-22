@@ -73,9 +73,6 @@ namespace tremotesf {
         void canAcceptUpdate();
         void saveState();
 
-        void onDownloadDirectoryPathChanged(QString path);
-        Coroutine<> getFreeSpaceForPath(QString path);
-
         Coroutine<> parseTorrentFile();
         void showTorrentParsingError(const QString& errorString);
 
@@ -94,15 +91,12 @@ namespace tremotesf {
         KMessageWidget* mMessageWidget{};
         QLineEdit* mTorrentFilePathTextField{};
         QPlainTextEdit* mTorrentLinkTextField{};
-        QLabel* mFreeSpaceLabel{};
         TorrentFilesView* mTorrentFilesView{};
         AddTorrentParametersWidgets mAddTorrentParametersWidgets{};
         QGroupBox* mEditLabelsGroupBox{};
         EditLabelsWidget* mEditLabelsWidget{};
 
         QDialogButtonBox* mDialogButtonBox{};
-
-        CoroutineScope mFreeSpaceCoroutineScope{};
 
         SaveWindowStateHandler mSaveStateHandler{this, [this] { saveState(); }};
     };

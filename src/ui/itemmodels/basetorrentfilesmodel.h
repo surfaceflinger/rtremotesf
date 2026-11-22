@@ -35,9 +35,6 @@ namespace tremotesf {
         virtual void setFilesWanted(const QModelIndexList& indexes, bool wanted);
         virtual void setFilesPriority(const QModelIndexList& indexes, TorrentFilesModelEntry::Priority priority);
 
-        virtual void renameFile(const QModelIndex& index, const QString& newName) = 0;
-        void fileRenamed(TorrentFilesModelEntry* entry, const QString& newName);
-
         Column fromColumnNumber(int column) const;
         int columnNumber(Column column) const;
 

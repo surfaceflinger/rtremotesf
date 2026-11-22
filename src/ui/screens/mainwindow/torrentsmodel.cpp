@@ -164,8 +164,6 @@ namespace tremotesf {
                     return qApp->translate("tremotesf", "Low");
                 }
                 break;
-            case Column::QueuePosition:
-                return torrent->data().queuePosition;
             case Column::Seeders:
                 return torrent->data().totalSeedersFromTrackersCount;
             case Column::Leechers:
@@ -194,16 +192,6 @@ namespace tremotesf {
                     QLocale::ShortFormat,
                     mUseRelativeTime
                 );
-            case Column::DownloadSpeedLimit:
-                if (torrent->data().downloadSpeedLimited) {
-                    return formatutils::formatSpeedLimit(torrent->data().downloadSpeedLimit);
-                }
-                break;
-            case Column::UploadSpeedLimit:
-                if (torrent->data().uploadSpeedLimited) {
-                    return formatutils::formatSpeedLimit(torrent->data().uploadSpeedLimit);
-                }
-                break;
             case Column::TotalDownloaded:
                 return formatutils::formatByteSize(torrent->data().totalDownloaded);
             case Column::TotalUploaded:
@@ -274,16 +262,6 @@ namespace tremotesf {
                 return torrent->data().addedDate;
             case Column::DoneDate:
                 return torrent->data().doneDate;
-            case Column::DownloadSpeedLimit:
-                if (torrent->data().downloadSpeedLimited) {
-                    return torrent->data().downloadSpeedLimit;
-                }
-                return -1;
-            case Column::UploadSpeedLimit:
-                if (torrent->data().uploadSpeedLimited) {
-                    return torrent->data().uploadSpeedLimit;
-                }
-                return -1;
             case Column::TotalDownloaded:
                 return torrent->data().totalDownloaded;
             case Column::TotalUploaded:
@@ -326,9 +304,6 @@ namespace tremotesf {
         case Column::Priority:
             //: Torrents list column name
             return qApp->translate("tremotesf", "Priority");
-        case Column::QueuePosition:
-            //: Torrents list column name
-            return qApp->translate("tremotesf", "Queue Position");
         case Column::Status:
             //: Torrents list column name
             return qApp->translate("tremotesf", "Status");
@@ -362,12 +337,6 @@ namespace tremotesf {
         case Column::DoneDate:
             //: Torrents list column name, date/time when torrent was completed
             return qApp->translate("tremotesf", "Completed on");
-        case Column::DownloadSpeedLimit:
-            //: Torrents list column name, download speed limit
-            return qApp->translate("tremotesf", "Down Limit");
-        case Column::UploadSpeedLimit:
-            //: Torrents list column name, upload speed limit
-            return qApp->translate("tremotesf", "Up Limit");
         case Column::TotalDownloaded:
             //: Torrents list column name, downloaded byte size
             return qApp->translate("tremotesf", "Downloaded");

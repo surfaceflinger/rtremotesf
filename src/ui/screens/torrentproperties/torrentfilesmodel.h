@@ -31,9 +31,6 @@ namespace tremotesf {
         void setFilesWanted(const QModelIndexList& indexes, bool wanted) override;
         void setFilesPriority(const QModelIndexList& indexes, TorrentFilesModelEntry::Priority priority) override;
 
-        void renameFile(const QModelIndex& index, const QString& newName) override;
-        void fileRenamed(const QString& path, const QString& newName);
-
         QString localFilePath(const QModelIndex& index) const;
         bool isWanted(const QModelIndex& index) const;
 

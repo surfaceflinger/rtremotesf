@@ -35,7 +35,7 @@ namespace tremotesf {
 
         mLabelsList = new QListWidget(this);
         layout->addWidget(mLabelsList, 0, 0, 1, 2);
-        mLabelsList->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        mLabelsList->setSelectionMode(QAbstractItemView::SingleSelection);
         mLabelsList->setIconSize(QSize(16, 16));
 
         const auto addLabel = [=, this](const QString& label) {
@@ -90,7 +90,8 @@ namespace tremotesf {
 
         const auto addLabelFromComboBox = [=, this] {
             const auto text = mComboBox->currentText().trimmed();
-            if (!text.isEmpty() && mLabelsList->findItems(text, Qt::MatchExactly).isEmpty()) {
+            if (!text.isEmpty()) {
+                mLabelsList->clear();
                 addLabel(text);
                 return true;
             }

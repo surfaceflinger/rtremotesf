@@ -109,7 +109,6 @@ namespace tremotesf {
                     mFilesModel->unwantedFiles(),
                     mFilesModel->highPriorityFiles(),
                     mFilesModel->lowPriorityFiles(),
-                    mFilesModel->renamedFiles(),
                     priorityFromComboBoxIndex(mAddTorrentParametersWidgets.priorityComboBox->currentIndex()),
                     mAddTorrentParametersWidgets.startTorrentCheckBox->isChecked(),
                     determineDeleteFileMode(mAddTorrentParametersWidgets),
@@ -240,23 +239,12 @@ namespace tremotesf {
 
         mAddTorrentParametersWidgets = createAddTorrentParametersWidgets(isAddingFile(), layout, mRpc);
 
-        mFreeSpaceLabel = new QLabel(this);
-        QObject::connect(
-            mAddTorrentParametersWidgets.downloadDirectoryWidget,
-            &RemoteDirectorySelectionWidget::pathChanged,
-            this,
-            [=, this] { onDownloadDirectoryPathChanged(mAddTorrentParametersWidgets.downloadDirectoryWidget->path()); }
-        );
-        onDownloadDirectoryPathChanged(mAddTorrentParametersWidgets.downloadDirectoryWidget->path());
-        layout->insertRow(
-            rowForWidget(layout, mAddTorrentParametersWidgets.downloadDirectoryWidget) + 1,
-            nullptr,
-            mFreeSpaceLabel
-        );
-
         if (isAddingFile()) {
             mTorrentFilesView = new TorrentFilesView(mFilesModel, mRpc);
-            layout->insertRow(rowForWidget(layout, mFreeSpaceLabel) + 1, mTorrentFilesView);
+            layout->insertRow(
+                rowForWidget(layout, mAddTorrentParametersWidgets.downloadDirectoryWidget) + 1,
+                mTorrentFilesView
+            );
         }
 
         mEditLabelsGroupBox = new QGroupBox(qApp->translate("tremotesf", "Labels"), this);
@@ -329,9 +317,7 @@ namespace tremotesf {
             mMessageWidget->animatedShow();
         }
 
-        mEditLabelsGroupBox->setVisible(
-            mRpc->isConnected() ? mRpc->serverSettings()->data().hasLabelsProperty() : true
-        );
+        mEditLabelsGroupBox->setVisible(true);
 
         canAcceptUpdate();
     }
@@ -351,28 +337,6 @@ namespace tremotesf {
         if (mTorrentFilesView) {
             mTorrentFilesView->saveState();
         }
-    }
-
-    void AddTorrentDialog::onDownloadDirectoryPathChanged(QString path) {
-        mFreeSpaceLabel->hide();
-        mFreeSpaceLabel->clear();
-        mFreeSpaceCoroutineScope.cancelAll();
-        if (!path.isEmpty()) {
-            mFreeSpaceCoroutineScope.launch(getFreeSpaceForPath(std::move(path)));
-        }
-    }
-
-    Coroutine<> AddTorrentDialog::getFreeSpaceForPath(QString path) {
-        const auto freeSpace = co_await mRpc->getFreeSpaceForPath(std::move(path));
-        if (freeSpace) {
-            mFreeSpaceLabel->setText(
-                //: %1 is a amount of free space in a directory, e.g. 1 GiB
-                qApp->translate("tremotesf", "Free space: %1").arg(formatutils::formatByteSize(*freeSpace))
-            );
-        } else {
-            mFreeSpaceLabel->setText(qApp->translate("tremotesf", "Error getting free space"));
-        }
-        mFreeSpaceLabel->show();
     }
 
     Coroutine<> AddTorrentDialog::parseTorrentFile() {
