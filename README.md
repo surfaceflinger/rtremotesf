@@ -1,35 +1,49 @@
-# Tremotesf
-Remote GUI for transmission-daemon. Supports GNU/Linux and Windows.
+# rtremotesf
+Remote GUI for rtorrent. Supports GNU/Linux, Windows and macOS.
 
 Table of Contents
 =================
 
-   * [Tremotesf](#tremotesf)
+   * [rtremotesf](#rtremotesf)
    * [Table of Contents](#table-of-contents)
+      * [Connecting to rtorrent](#connecting-to-rtorrent)
       * [Installation](#installation)
          * [Dependencies](#dependencies)
          * [Building](#building)
-         * [GNU/Linux](#gnulinux)
-         * [FreeBSD](#freebsd)
+         * [Nix](#nix)
          * [Windows](#windows)
          * [macOS](#macos)
-      * [Translations](#translations)
-      * [Screenshots](#screenshots)
+
+## Connecting to rtorrent
+rtremotesf talks to rtorrent's XML-RPC interface directly over SCGI. Enable an SCGI listener in `rtorrent.rc`:
+
+```ini
+# TCP
+network.scgi.open_port = 127.0.0.1:5000
+
+# or a Unix socket
+# network.scgi.open_local = /run/user/1000/rtorrent.sock
+```
+
+rtorrent's XML-RPC interface has no authentication or encryption. If it is not bound to a local address,
+protect it with an SSH tunnel, a VPN, or a reverse proxy. In rtremotesf's server settings use the same address and
+port, or the Unix socket path.
 
 ## Installation
+This fork is distributed as source. Use the Nix flake or build it from source.
+
 ### Dependencies
 - C++ compiler with partial C++23 support. Minimum tested versions of GCC and Clang toolchains:
   1. GCC 14
   2. Clang 19 with libstdc++ 14
   3. Clang 19 with libc++ 19
-- CMake 3.25 or newer
+- CMake 3.31 or newer
 - Qt 6.8 or newer (Core, Network, Gui, Widgets modules)
 - fmt 10.1.0 or newer
 - KWidgetsAddons 6.11 or newer
 - libpsl 0.21.2 or newer
 - cxxopts 3.2.1 or newer
 - Qt Test module (for tests only)
-- cpp-httplib 0.18.7 or newer, with OpenSSL support (for tests only, optional)
 
 On GNU/Linux and BSD, also:
 - Gettext 0.22.5 or newer
@@ -39,11 +53,11 @@ On GNU/Linux and BSD, also:
 
 On Windows, also:
 - Windows 11 SDK is needed to build
-- Minimum supported OS version to run Tremotesf is Windows 10 1809 (October 2018 Update)
+- Minimum supported OS version to run rtremotesf is Windows 10 1809 (October 2018 Update)
 
 On macOS, also:
 - Latest Xcode and macOS SDK versions supported by Qt (see [here](https://doc.qt.io/qt-6/macos.html))
-- Minimum supported OS version to run Tremotesf is macOS 12
+- Minimum supported OS version to run rtremotesf is macOS 12
 
 ### Building
 ```sh
@@ -54,59 +68,19 @@ cmake --install /path/to/build/directory --config Debug --prefix /path/to/instal
 This example uses base-multi preset in CMakePresets.json and Ninja Multi-Config generator.
 You can invoke CMake in a different way if you want.
 
-CMake configuration options:
-
-`TREMOTESF_WITH_HTTPLIB` - determines how cpp-httplib test dependency is searched. Possible values:
-  - auto: CMake find_package call, otherwise pkg-config, otherwise bundled copy is used.
-  - system: CMake find_package call, otherwise pkg-config, otherwise fatal error.
-  - bundled: bundled copy is used.
-  - none: cpp-httplib is not used at all and tests that require it are disabled.
-
-### GNU/Linux
-- Flatpak - [Flathub](https://flathub.org/apps/details/org.equeim.Tremotesf)
-
-- Arch Linux - [AUR](https://aur.archlinux.org/packages/tremotesf)
-
-- Debian - [Official repository](https://packages.debian.org/sid/tremotesf), or [my own OBS repository](https://build.opensuse.org/package/show/home:equeim:tremotesf/Tremotesf)
+### Nix
+A flake is provided with the package and a development shell:
 
 ```sh
-debian_version="$(source /etc/os-release && echo "$VERSION_ID")"
-wget -qO - "https://download.opensuse.org/repositories/home:/equeim:/tremotesf/Debian_${debian_version}/Release.key" | sudo tee /etc/apt/trusted.gpg.d/tremotesf.asc
-sudo add-apt-repository "deb http://download.opensuse.org/repositories/home:/equeim:/tremotesf/Debian_${debian_version}/ /"
-sudo apt update
-sudo apt install tremotesf
+nix build
+nix run
+nix develop
 ```
 
-- Fedora - [Copr](https://copr.fedorainfracloud.org/coprs/equeim/tremotesf)
-```sh
-sudo dnf copr enable equeim/tremotesf
-sudo dnf install tremotesf
-```
-
-- Gentoo - [equeim-overlay](https://github.com/equeim/equeim-overlay)
-
-- openSUSE Tumbleweed - [OBS](https://build.opensuse.org/package/show/home:equeim:tremotesf/Tremotesf)
-```sh
-sudo zypper ar https://download.opensuse.org/repositories/home:/equeim:/tremotesf/openSUSE_Tumbleweed/home:equeim:tremotesf.repo
-sudo zypper in tremotesf
-```
-
-- Ubuntu - [OBS](https://build.opensuse.org/package/show/home:equeim:tremotesf/Tremotesf)
-
-```sh
-ubuntu_version="$(source /etc/os-release && echo "$VERSION_ID")"
-wget -qO - "https://download.opensuse.org/repositories/home:/equeim:/tremotesf/xUbuntu_${ubuntu_version}/Release.key" | sudo tee /etc/apt/trusted.gpg.d/tremotesf.asc
-sudo add-apt-repository "deb http://download.opensuse.org/repositories/home:/equeim:/tremotesf/xUbuntu_${ubuntu_version}/ /"
-sudo apt update
-sudo apt install tremotesf
-```
-
-### FreeBSD
-Tremotesf is [available in FreeBSD ports](https://www.freshports.org/net-p2p/tremotesf/).
+The package is exposed for every system listed in `lib.systems.flakeExposed`.
 
 ### Windows
-Windows builds are available at [releases](https://github.com/equeim/tremotesf2/releases) page.
-Minimum supported OS version to run Tremotesf is Windows 10 1809 (October 2018 Update).
+Minimum supported OS version to run rtremotesf is Windows 10 1809 (October 2018 Update).
 
 Build instructions for MSVC toolchain with vcpkg:
 1. Install Visual Studio with 'Desktop development with C++' workload
@@ -127,8 +101,7 @@ cmake --build path\to\build\directory --target package
 ```
 
 ### macOS
-macOS builds are available at [releases](https://github.com/equeim/tremotesf2/releases) page.
-Minimum supported OS version to run Tremotesf is macOS 12.
+Minimum supported OS version to run rtremotesf is macOS 12.
 
 Build instructions with vcpkg:
 1. Install Xcode
@@ -144,12 +117,3 @@ cmake --install path/to/build/directory --prefix path/to/install/directory
 # Next command creates DMG image
 cmake --build path/to/build/directory --target package
 ```
-
-## Translations
-Translations are managed on [Transifex](https://www.transifex.com/equeim/tremotesf).
-
-## Screenshots
-![](https://github.com/equeim/tremotesf-screenshots/raw/master/desktop-1.png)
-![](https://github.com/equeim/tremotesf-screenshots/raw/master/desktop-2.png)
-![](https://github.com/equeim/tremotesf-screenshots/raw/master/desktop-3.png)
-![](https://github.com/equeim/tremotesf-screenshots/raw/master/desktop-4.png)

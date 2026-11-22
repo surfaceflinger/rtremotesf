@@ -11,8 +11,8 @@ if (TREMOTESF_UNIX_FREEDESKTOP)
 
     set(po_dir "${CMAKE_CURRENT_SOURCE_DIR}/po")
 
-    set(desktop_file_template "${CMAKE_CURRENT_SOURCE_DIR}/org.equeim.Tremotesf.desktop.in")
-    set(desktop_file_path "${CMAKE_CURRENT_BINARY_DIR}/org.equeim.Tremotesf.desktop")
+    set(desktop_file_template "${CMAKE_CURRENT_SOURCE_DIR}/org.equeim.Rtremotesf.desktop.in")
+    set(desktop_file_path "${CMAKE_CURRENT_BINARY_DIR}/org.equeim.Rtremotesf.desktop")
     add_custom_command(
         OUTPUT "${desktop_file_path}"
         COMMAND "${GETTEXT_MSGFMT_EXECUTABLE}"
@@ -23,8 +23,8 @@ if (TREMOTESF_UNIX_FREEDESKTOP)
     add_custom_target(desktop_file ALL DEPENDS "${desktop_file_path}")
     install(FILES "${desktop_file_path}" DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
 
-    set(appdata_template "${CMAKE_CURRENT_SOURCE_DIR}/org.equeim.Tremotesf.appdata.xml.in")
-    set(appdata_path "${CMAKE_CURRENT_BINARY_DIR}/org.equeim.Tremotesf.appdata.xml")
+    set(appdata_template "${CMAKE_CURRENT_SOURCE_DIR}/org.equeim.Rtremotesf.appdata.xml.in")
+    set(appdata_path "${CMAKE_CURRENT_BINARY_DIR}/org.equeim.Rtremotesf.appdata.xml")
     add_custom_command(
         OUTPUT "${appdata_path}"
         COMMAND "${GETTEXT_MSGFMT_EXECUTABLE}"
@@ -86,6 +86,6 @@ elseif (WIN32 OR APPLE)
 endif()
 
 if (APPLE)
-    install(FILES icons/macos/tremotesf.icns DESTINATION "${TREMOTESF_EXTERNAL_RESOURCES_PATH}")
+    install(FILES icons/macos/rtremotesf.icns DESTINATION "${TREMOTESF_EXTERNAL_RESOURCES_PATH}")
 endif ()
 

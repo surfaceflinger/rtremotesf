@@ -233,15 +233,16 @@ target_sources(tremotesf_objects
 target_link_libraries(tremotesf_objects PUBLIC cxxopts::cxxopts Threads::Threads fmt::fmt Qt::Core Qt::Network Qt::Widgets KF6::WidgetsAddons)
 
 # We need these as CMake variables for configure_file() call below
-set(TREMOTESF_APP_NAME "Tremotesf")
-set(TREMOTESF_EXECUTABLE_NAME "tremotesf")
+set(TREMOTESF_APP_NAME "rtremotesf")
+set(TREMOTESF_EXECUTABLE_NAME "rtremotesf")
 
 target_compile_definitions(
     tremotesf_objects
     PUBLIC
     TREMOTESF_EXECUTABLE_NAME="${TREMOTESF_EXECUTABLE_NAME}"
-    TREMOTESF_APP_ID="org.equeim.Tremotesf"
+    TREMOTESF_APP_ID="org.equeim.Rtremotesf"
     TREMOTESF_APP_NAME="${TREMOTESF_APP_NAME}"
+    TREMOTESF_ICON_NAME="rtremotesf"
     TREMOTESF_VERSION="${PROJECT_VERSION}"
     FMT_VERSION_MAJOR=${fmt_VERSION_MAJOR}
 )
@@ -364,12 +365,13 @@ elseif (WIN32)
         startup/windowsfatalerrorhandlers.h
         ui/darkthemeapplier_windows.h
     )
-    set(TREMOTESF_WINDOWS_ICON "${CMAKE_CURRENT_SOURCE_DIR}/tremotesf.ico" PARENT_SCOPE)
+    set(TREMOTESF_WINDOWS_ICON "${CMAKE_CURRENT_SOURCE_DIR}/rtremotesf.ico" PARENT_SCOPE)
 else ()
     message(FATAL_ERROR "Unsupported target platform ${CMAKE_SYSTEM_NAME}")
 endif ()
 
 add_executable(tremotesf startup/main.cpp)
+set_target_properties(tremotesf PROPERTIES OUTPUT_NAME "${TREMOTESF_EXECUTABLE_NAME}")
 target_link_libraries(tremotesf PRIVATE tremotesf_objects)
 
 # Executable configuration on Windows

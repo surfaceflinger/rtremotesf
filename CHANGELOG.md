@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- Tremotesf now controls rtorrent instead of transmission-daemon. It talks to rtorrent's XML-RPC interface
+  directly over SCGI, using either a TCP port or a Unix socket
+- Renamed the executable, app ID, D-Bus service, desktop/appdata files and icons to rtremotesf so that this fork
+  can be installed alongside Tremotesf
+- Transmission-specific functionality was removed: per-torrent speed and ratio limits, seeding idle limits,
+  download/seed queues, alternative speed limits, incomplete directory, port forwarding, uTP, LPD, global peer limit,
+  tracker editing/removal, file renaming, and moving torrent data
+- Labels now use rtorrent's single `d.custom1` field
+- "Delete with files" removes the torrent's data with `rm -rf` through rtorrent's `execute` command, after verifying
+  that the path is a safe child of the torrent's download directory
+
 ## [2.10.1] - 2026-07-28
 ### Fixed
 - Crash on startup on Windows

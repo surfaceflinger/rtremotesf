@@ -22,39 +22,39 @@ msgstr ""
 "Language: pl\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
-#: tmp.desktop.in:4 ../org.equeim.Tremotesf.appdata.xml.in:7
-msgid "Tremotesf"
-msgstr "Tremotesf"
+#: tmp.desktop.in:4 ../org.equeim.Rtremotesf.appdata.xml.in:7
+msgid "rtremotesf"
+msgstr "rtremotesf"
 
-#: tmp.desktop.in:5 ../org.equeim.Tremotesf.appdata.xml.in:8
+#: tmp.desktop.in:5 ../org.equeim.Rtremotesf.appdata.xml.in:8
 msgid "Remote GUI for Transmission BitTorrent client"
 msgstr "Zdalne GUI dla klienta BitTorrent Transmission"
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:11
+#: ../org.equeim.Rtremotesf.appdata.xml.in:11
 msgid ""
-"Tremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
+"rtremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
 "control your transmission-daemon instance, manage torrents, set Transmission"
 " settings, view server statistics."
 msgstr ""
-"Tremotesf jest zdalnym GUI dla klienta BitTorrent Transmission. Za jego "
+"rtremotesf jest zdalnym GUI dla klienta BitTorrent Transmission. Za jego "
 "pomocą możesz w pełni kontrolować swoją instancję transmission-daemon, "
 "zarządzać torrentami, konfigurować ustawienia Transmission i wyświetlać "
 "statystyki serwera."
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:14
+#: ../org.equeim.Rtremotesf.appdata.xml.in:14
 msgid ""
 "You can add several servers profiles and switch between them (only one can "
-"be connected at a time). Tremotesf has support of HTTPS, including self-"
+"be connected at a time). rtremotesf has support of HTTPS, including self-"
 "signed certificates and client certificate authentication. You can set "
 "mounted directories for servers and quickly open torrents' files and choose "
 "download directory from file dialog."
 msgstr ""
 "Możesz dodać kilka profili serwerów i przełączać się między nimi (tylko "
-"jeden może być podłączony jednocześnie). Tremotesf obsługuje protokół HTTPS,"
+"jeden może być podłączony jednocześnie). rtremotesf obsługuje protokół HTTPS,"
 " w tym certyfikaty z podpisem własnym i uwierzytelnianie certyfikatów "
 "klienta. Możesz ustawić zamontowane katalogi dla serwerów i szybko otwierać "
 "pliki torrentów oraz wybrać katalog pobierania z okna dialogowego plików."
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:41
+#: ../org.equeim.Rtremotesf.appdata.xml.in:41
 msgid "Alexey Rochev"
 msgstr "Alexey Rochev"

@@ -22,39 +22,39 @@ msgstr ""
 "Language: nl_BE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: tmp.desktop.in:4 ../org.equeim.Tremotesf.appdata.xml.in:7
-msgid "Tremotesf"
-msgstr "Tremotesf"
+#: tmp.desktop.in:4 ../org.equeim.Rtremotesf.appdata.xml.in:7
+msgid "rtremotesf"
+msgstr "rtremotesf"
 
-#: tmp.desktop.in:5 ../org.equeim.Tremotesf.appdata.xml.in:8
+#: tmp.desktop.in:5 ../org.equeim.Rtremotesf.appdata.xml.in:8
 msgid "Remote GUI for Transmission BitTorrent client"
 msgstr "Externen GUI voor Transmission"
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:11
+#: ../org.equeim.Rtremotesf.appdata.xml.in:11
 msgid ""
-"Tremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
+"rtremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
 "control your transmission-daemon instance, manage torrents, set Transmission"
 " settings, view server statistics."
 msgstr ""
-"Tremotesf is nen externen GUI voor Transmission. Ge kunt uw instantie van "
+"rtremotesf is nen externen GUI voor Transmission. Ge kunt uw instantie van "
 "transmission-daemon volledig besturen, torrents beheren, Transmission-"
 "instellingen configureren en serverstatistieken bekijken."
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:14
+#: ../org.equeim.Rtremotesf.appdata.xml.in:14
 msgid ""
 "You can add several servers profiles and switch between them (only one can "
-"be connected at a time). Tremotesf has support of HTTPS, including self-"
+"be connected at a time). rtremotesf has support of HTTPS, including self-"
 "signed certificates and client certificate authentication. You can set "
 "mounted directories for servers and quickly open torrents' files and choose "
 "download directory from file dialog."
 msgstr ""
 "Ge kunt verschillende serverprofielen toevoegen en dertussen wisselen "
-"(slechts één profiel kan tegelijk verbonden zijn). Tremotesf ondersteunt "
+"(slechts één profiel kan tegelijk verbonden zijn). rtremotesf ondersteunt "
 "HTTPS, inclusief zelfondertekende certificaten en "
 "cliëntcertificaatauthenticatie. Ge kunt aangekoppelde mappen voor servers "
 "instellen en rap de bestanden van torrents openen, en een downloadmap kiezen"
 " via de bestandsdialoog."
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:41
+#: ../org.equeim.Rtremotesf.appdata.xml.in:41
 msgid "Alexey Rochev"
 msgstr "Alexey Rochev"

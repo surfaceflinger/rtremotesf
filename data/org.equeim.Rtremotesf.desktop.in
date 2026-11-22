@@ -4,13 +4,13 @@
 
 [Desktop Entry]
 Type=Application
-Name=Tremotesf
-Comment=Remote GUI for Transmission BitTorrent client
+Name=rtremotesf
+Comment=Remote GUI for rtorrent BitTorrent client
 Categories=Network;P2P;
-Icon=org.equeim.Tremotesf
-Exec=tremotesf %U
+Icon=rtremotesf
+Exec=rtremotesf %U
 StartupNotify=true
-StartupWMClass=tremotesf
+StartupWMClass=rtremotesf
 X-GNOME-SingleWindow=true
 SingleMainWindow=true
 MimeType=application/x-bittorrent;x-scheme-handler/magnet;

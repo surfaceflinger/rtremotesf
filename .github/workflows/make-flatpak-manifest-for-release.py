@@ -9,7 +9,7 @@ import json
 from hashlib import sha256
 from pathlib import PurePath
 
-MANIFEST_FILENAME = "org.equeim.Tremotesf.json"
+MANIFEST_FILENAME = "org.equeim.Rtremotesf.json"
 
 
 def main():

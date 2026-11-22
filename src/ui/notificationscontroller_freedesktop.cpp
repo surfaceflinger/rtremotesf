@@ -128,7 +128,7 @@ namespace tremotesf {
                     title,
                     message,
                     //: Button on notification
-                    {"default"_L1, qApp->translate("tremotesf", "Show Tremotesf")},
+                    {"default"_L1, qApp->translate("tremotesf", "Show rtremotesf")},
                     {{"desktop-entry"_L1, TREMOTESF_APP_ID ""_L1},
                      {"x-kde-origin-name"_L1, Servers::instance()->currentServerName()}},
                     -1

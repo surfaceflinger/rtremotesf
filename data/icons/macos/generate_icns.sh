@@ -8,9 +8,9 @@ set -eo pipefail
 
 readonly SCRIPT_DIR="$(realpath "$(dirname "$0")")"
 
-readonly ICONSET="${SCRIPT_DIR}/tremotesf.iconset"
+readonly ICONSET="${SCRIPT_DIR}/rtremotesf.iconset"
 readonly HICOLOR_ICONS_DIR="${SCRIPT_DIR}/../hicolor"
-readonly HICOLOR_ICON_NAME="org.equeim.Tremotesf"
+readonly HICOLOR_ICON_NAME="rtremotesf"
 readonly HICOLOR_ICON_PNG="${HICOLOR_ICON_NAME}.png"
 readonly HICOLOR_ICON_SVG="${HICOLOR_ICONS_DIR}/scalable/apps/${HICOLOR_ICON_NAME}.svg"
 

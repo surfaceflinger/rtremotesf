@@ -10,11 +10,11 @@ SPDX-License-Identifier: CC0-1.0
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleExecutable</key>
-    <string>tremotesf</string>
+    <string>rtremotesf</string>
     <key>CFBundleIconFile</key>
-    <string>tremotesf</string>
+    <string>rtremotesf</string>
     <key>CFBundleIdentifier</key>
-    <string>org.equeim.Tremotesf</string>
+    <string>org.equeim.Rtremotesf</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
@@ -39,7 +39,7 @@ SPDX-License-Identifier: CC0-1.0
                 <string>torrent</string>
             </array>
             <key>CFBundleTypeIconFile</key>
-            <string>tremotesf</string>
+            <string>rtremotesf</string>
             <key>CFBundleTypeName</key>
             <string>BitTorrent Document</string>
             <key>CFBundleTypeRole</key>
@@ -68,7 +68,7 @@ SPDX-License-Identifier: CC0-1.0
             <key>UTTypeDescription</key>
             <string>BitTorrent Document</string>
             <key>UTTypeIconFile</key>
-            <string>tremotesf</string>
+            <string>rtremotesf</string>
             <key>UTTypeIdentifier</key>
             <string>org.bittorrent.torrent</string>
             <key>UTTypeReferenceURL</key>

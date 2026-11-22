@@ -63,7 +63,7 @@ jobs:
 
     - name: Install build dependencies
       run: |
-        readarray -t dependencies < <(rpmspec ${{steps.fedora-compiler.outputs.rpm-macro}} --define 'with_asan 1' -q --srpm --qf '[%{REQUIRES}\n]' packaging/rpm/tremotesf.spec)
+        readarray -t dependencies < <(rpmspec ${{steps.fedora-compiler.outputs.rpm-macro}} --define 'with_asan 1' -q --srpm --qf '[%{REQUIRES}\n]' packaging/rpm/rtremotesf.spec)
         ${{env.INSTALL_PACKAGES}} "${dependencies[@]}"
 
     - name: Make source archive
@@ -77,7 +77,7 @@ jobs:
 
     - name: Build RPM
       run: |
-        rpmbuild ${{steps.fedora-compiler.outputs.rpm-macro}} -bb --with asan packaging/rpm/tremotesf.spec
+        rpmbuild ${{steps.fedora-compiler.outputs.rpm-macro}} -bb --with asan packaging/rpm/rtremotesf.spec
 
     - name: Install RPM
       run: |
@@ -159,14 +159,14 @@ jobs:
 
     - name: Build Tremotesf
       run: |
-        flatpak-builder --user --install-deps-from=flathub build-dir org.equeim.Tremotesf.json
+        flatpak-builder --user --install-deps-from=flathub build-dir org.equeim.Rtremotesf.json
 
     - name: Check that generation of release manifest works
       run: |
         readonly archive="$(.github/workflows/make-source-archive.py zstd)"
         .github/workflows/make-flatpak-manifest-for-release.py test "$archive"
         echo "Release Flatpak manifest:"
-        cat org.equeim.Tremotesf.json
+        cat org.equeim.Rtremotesf.json
 
   build-freebsd:
     strategy:
@@ -191,9 +191,9 @@ jobs:
       with:
         run: |
           pkg update -f
-          pkg install -y cmake ninja pkgconf libpsl libfmt qt6-base qt6-tools kf6-kwidgetsaddons kf6-kwindowsystem gettext-tools cxxopts cpp-httplib
+          pkg install -y cmake ninja pkgconf libpsl libfmt qt6-base qt6-tools kf6-kwidgetsaddons kf6-kwindowsystem gettext-tools cxxopts
           echo 'Configuring CMake'
-          cmake -S . --preset base -D TREMOTESF_WITH_HTTPLIB=system -D TREMOTESF_ASAN=ON
+          cmake -S . --preset base -D TREMOTESF_ASAN=ON
           echo 'Building Debug'
           cmake --build --preset base-debug -v
           echo 'Testing Debug'
@@ -248,8 +248,7 @@ jobs:
       run: |
           set -e -o pipefail
           echo '::group::Configuring CMake'
-          # cpp-httplib doesn't compile with MinGW due to missing function (GetAddrInfoExCancel) in system headers
-          cmake -S . --preset base -D TREMOTESF_WITH_HTTPLIB=none -D TREMOTESF_ASAN=ON
+          cmake -S . --preset base -D TREMOTESF_ASAN=ON
           echo '::endgroup'
           echo '::group::Building Debug'
           cmake --build --preset base-debug -v

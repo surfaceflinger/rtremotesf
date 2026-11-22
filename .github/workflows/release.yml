@@ -26,8 +26,8 @@ jobs:
 
         .github/workflows/make-flatpak-manifest-for-release.py '${{ github.event.release.tag_name }}' "${archives[-1]}"
         echo "Release Flatpak manifest:"
-        cat org.equeim.Tremotesf.json
-        gh release upload '${{ github.event.release.tag_name }}' org.equeim.Tremotesf.json
+        cat org.equeim.Rtremotesf.json
+        gh release upload '${{ github.event.release.tag_name }}' org.equeim.Rtremotesf.json
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1,9 +1,9 @@
 {
-    "app-id": "org.equeim.Tremotesf",
+    "app-id": "org.equeim.Rtremotesf",
     "runtime": "org.kde.Platform",
     "runtime-version": "6.11",
     "sdk": "org.kde.Sdk",
-    "command": "tremotesf",
+    "command": "rtremotesf",
     "finish-args": [
         "--socket=fallback-x11",
         "--socket=wayland",
@@ -38,23 +38,7 @@
             ]
         },
         {
-            "name": "cpp-httplib",
-            "buildsystem": "cmake-ninja",
-            "builddir": true,
-            "config-opts": [
-                "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
-                "-DHTTPLIB_REQUIRE_OPENSSL=ON"
-            ],
-            "sources": [
-                {
-                    "type": "archive",
-                    "url": "https://github.com/yhirose/cpp-httplib/archive/refs/tags/v0.64.0.tar.gz",
-                    "sha256": "1ada413782af5e67e80452c39b7c90beb6fa4fc8341e18c0896bf95684b9a620"
-                }
-            ]
-        },
-        {
-            "name": "tremotesf",
+            "name": "rtremotesf",
             "buildsystem": "cmake-ninja",
             "builddir": true,
             "build-options": {
@@ -66,7 +50,6 @@
             "config-opts": [
                 "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
                 "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
-                "-DTREMOTESF_WITH_HTTPLIB=system",
                 "-DTREMOTESF_ASAN=ON"
             ],
             "run-tests": true,

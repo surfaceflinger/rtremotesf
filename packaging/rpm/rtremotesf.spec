@@ -4,12 +4,12 @@
 
 %bcond asan 0
 
-%global app_id org.equeim.Tremotesf
+%global app_id org.equeim.Rtremotesf
 
-Name:       tremotesf
+Name:       rtremotesf
 Version:    2.10.1
 Release:    1%{!?suse_version:%{?dist}}
-Summary:    Remote GUI for transmission-daemon
+Summary:    Remote GUI for rtorrent
 %if %{defined suse_version}
 Group:      Productivity/Networking/Other
 License:    GPL-3.0-or-later
@@ -38,10 +38,8 @@ BuildRequires: cmake(KF6WidgetsAddons)
 BuildRequires: cmake(KF6WindowSystem)
 BuildRequires: cmake(cxxopts)
 BuildRequires: pkgconfig(libpsl)
-BuildRequires: openssl-devel
 
 %if %{defined fedora}
-BuildRequires: cmake(httplib)
 BuildRequires: libappstream-glib
   %if "%{toolchain}" == "clang"
 BuildRequires: clang
@@ -56,29 +54,25 @@ BuildRequires: libasan
   %endif
 Requires: qt6-qtsvg
 Requires: breeze-icon-theme
-  %global tremotesf_with_httplib system
 %endif
 
 %if %{defined suse_version}
-BuildRequires: pkgconfig(cpp-httplib)
 BuildRequires: appstream-glib
 # OBS complains about not owned directories if hicolor-icon-theme isn't installed at build time
 BuildRequires: hicolor-icon-theme
 Requires: libQt6Svg6
 Requires: kf6-breeze-icons
 %global _metainfodir %{_datadir}/metainfo
-%global tremotesf_with_httplib system
 %endif
 
 %if %{defined mageia}
 BuildRequires: appstream-util
 Requires: qtsvg5
 Requires: breeze-icons
-%global tremotesf_with_httplib bundled
 %endif
 
 %description
-Remote GUI for Transmission BitTorrent client.
+Remote GUI for rtorrent BitTorrent client.
 
 
 %prep
@@ -86,7 +80,7 @@ Remote GUI for Transmission BitTorrent client.
 
 
 %build
-%cmake -D TREMOTESF_WITH_HTTPLIB=%{tremotesf_with_httplib} -D TREMOTESF_ASAN=%{with asan}
+%cmake -D TREMOTESF_ASAN=%{with asan}
 %cmake_build
 
 %check
@@ -100,7 +94,7 @@ desktop-file-validate %{buildroot}/%{_datadir}/applications/%{app_id}.desktop
 
 %files
 %{_bindir}/%{name}
-%{_datadir}/icons/hicolor/*/apps/%{app_id}.*
+%{_datadir}/icons/hicolor/*/apps/rtremotesf.*
 %{_datadir}/applications/%{app_id}.desktop
 %{_metainfodir}/%{app_id}.appdata.xml
 

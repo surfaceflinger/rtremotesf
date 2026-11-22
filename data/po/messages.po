@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Alexey Rochev <equeim@gmail.com>
-# This file is distributed under the same license as the tremotesf package.
+# This file is distributed under the same license as the rtremotesf package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: tremotesf\n"
+"Project-Id-Version: rtremotesf\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-31 19:28+0300\n"
+"POT-Creation-Date: 2026-11-22 02:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,30 +17,26 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: tmp.desktop.in:4 ../org.equeim.Tremotesf.appdata.xml.in:7
-msgid "Tremotesf"
+#: tmp.desktop.in:7 ../org.equeim.Rtremotesf.appdata.xml.in:14
+msgid "rtremotesf"
 msgstr ""
 
-#: tmp.desktop.in:5 ../org.equeim.Tremotesf.appdata.xml.in:8
-msgid "Remote GUI for Transmission BitTorrent client"
+#: tmp.desktop.in:8 ../org.equeim.Rtremotesf.appdata.xml.in:15
+msgid "Remote GUI for rtorrent BitTorrent client"
 msgstr ""
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:11
+#: ../org.equeim.Rtremotesf.appdata.xml.in:18
 msgid ""
-"Tremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
-"control your transmission-daemon instance, manage torrents, set Transmission "
-"settings, view server statistics."
+"rtremotesf is a remote GUI for rtorrent BitTorrent client. You can fully "
+"control your rtorrent instance, manage torrents, configure its settings, "
+"view server statistics. rtremotesf talks to rtorrent's XML-RPC interface "
+"over SCGI."
 msgstr ""
 
-#: ../org.equeim.Tremotesf.appdata.xml.in:14
+#: ../org.equeim.Rtremotesf.appdata.xml.in:23
 msgid ""
-"You can add several servers profiles and switch between them (only one can "
-"be connected at a time). Tremotesf has support of HTTPS, including self-"
-"signed certificates and client certificate authentication. You can set "
-"mounted directories for servers and quickly open torrents' files and choose "
-"download directory from file dialog."
-msgstr ""
-
-#: ../org.equeim.Tremotesf.appdata.xml.in:41
-msgid "Alexey Rochev"
+"You can add several server profiles and switch between them (only one can be "
+"connected at a time). You can set mounted directories for servers and "
+"quickly open torrents' files and choose download directory from a file "
+"dialog."
 msgstr ""

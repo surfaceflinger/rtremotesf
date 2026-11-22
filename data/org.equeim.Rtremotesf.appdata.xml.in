@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2015-2025 Alexey Rochev
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
+<component type="desktop-application">
+  <id>org.equeim.Rtremotesf</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+
+  <name>rtremotesf</name>
+  <summary>Remote GUI for rtorrent BitTorrent client</summary>
+
+  <description>
+    <p>
+      rtremotesf is a remote GUI for rtorrent BitTorrent client. You can fully control your rtorrent instance,
+      manage torrents, configure its settings, view server statistics. rtremotesf talks to rtorrent's XML-RPC
+      interface over SCGI.
+    </p>
+    <p>
+      You can add several server profiles and switch between them (only one can be connected at a time).
+      You can set mounted directories for servers and quickly open torrents' files and choose download directory
+      from a file dialog.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">org.equeim.Rtremotesf.desktop</launchable>
+  <provides>
+    <binary>rtremotesf</binary>
+  </provides>
+
+  <content_rating type="oars-1.1"/>
+</component>

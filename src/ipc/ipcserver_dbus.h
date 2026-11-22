@@ -13,8 +13,8 @@ namespace tremotesf {
         Q_OBJECT
 
     public:
-        static constexpr auto serviceName = QLatin1String("org.equeim.Tremotesf");
-        static constexpr auto objectPath = QLatin1String("/org/equeim/Tremotesf");
+        static constexpr auto serviceName = QLatin1String("org.equeim.Rtremotesf");
+        static constexpr auto objectPath = QLatin1String("/org/equeim/Rtremotesf");
         static constexpr auto interfaceName = QLatin1String("org.freedesktop.Application");
 
         inline explicit IpcServerDbus(QObject* parent = nullptr) : IpcServer(parent) {};
