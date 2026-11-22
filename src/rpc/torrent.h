@@ -28,18 +28,10 @@ namespace tremotesf {
     struct TorrentData {
         Q_GADGET
     public:
-        enum class Status {
-            Paused,
-            QueuedForChecking,
-            Checking,
-            QueuedForDownloading,
-            Downloading,
-            QueuedForSeeding,
-            Seeding
-        };
+        enum class Status { Paused, Checking, Downloading, Seeding };
         Q_ENUM(Status)
 
-        enum class Error { None, TrackerWarning, TrackerError, LocalError };
+        enum class Error { None, TrackerError, LocalError };
         Q_ENUM(Error)
 
         enum class Priority { Low, Normal, High };
@@ -68,8 +60,6 @@ namespace tremotesf {
         double recheckProgress{};
         int eta{};
 
-        bool metadataComplete{};
-
         qint64 downloadSpeed{};
         qint64 uploadSpeed{};
 
@@ -78,10 +68,8 @@ namespace tremotesf {
         double ratio{};
 
         int totalSeedersFromTrackersCount{};
-        int peersSendingToUsCount{};
-        int webSeedersSendingToUsCount{};
+        int peersConnected{};
         int totalLeechersFromTrackersCount{};
-        int peersGettingFromUsCount{};
 
         int peersLimit{};
 
@@ -114,10 +102,8 @@ namespace tremotesf {
 
         [[nodiscard]] bool hasError() const { return error != Error::None; }
         [[nodiscard]] bool isFinished() const { return leftUntilDone == 0; }
-        [[nodiscard]] bool isDownloadingStalled() const {
-            return (peersSendingToUsCount == 0 && webSeedersSendingToUsCount == 0);
-        }
-        [[nodiscard]] bool isSeedingStalled() const { return peersGettingFromUsCount == 0; }
+        [[nodiscard]] bool isDownloadingStalled() const { return peersConnected == 0; }
+        [[nodiscard]] bool isSeedingStalled() const { return peersConnected == 0; }
 
     private:
         void updateProperty(

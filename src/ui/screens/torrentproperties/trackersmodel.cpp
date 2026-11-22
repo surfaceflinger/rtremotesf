@@ -28,9 +28,6 @@ namespace tremotesf {
             case Tracker::Status::WaitingForUpdate:
                 //: Tracker status
                 return qApp->translate("tremotesf", "Waiting for update");
-            case Tracker::Status::QueuedForUpdate:
-                //: Tracker status
-                return qApp->translate("tremotesf", "About to update");
             case Tracker::Status::Updating:
                 //: Tracker status
                 return qApp->translate("tremotesf", "Updating");

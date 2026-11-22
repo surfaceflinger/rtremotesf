@@ -14,7 +14,6 @@ SPDX-License-Identifier: CC0-1.0
         <file>priority-high.svg</file>
         <file>priority-low.svg</file>
         <file>priority-normal.svg</file>
-        <file>queued.svg</file>
         <file>seeding.svg</file>
         <file>stalled-downloading.svg</file>
         <file>stalled-seeding.svg</file>

@@ -136,16 +136,8 @@ namespace tremotesf {
         activityGroupBoxLayout->addRow(qApp->translate("tremotesf", "Seeders:"), seedersLabel);
         auto leechersLabel = new QLabel(this);
         activityGroupBoxLayout->addRow(qApp->translate("tremotesf", "Leechers:"), leechersLabel);
-        auto peersSendingToUsLabel = new QLabel(this);
-        activityGroupBoxLayout->addRow(
-            qApp->translate("tremotesf", "Peers we are downloading from:"),
-            peersSendingToUsLabel
-        );
-        auto peersGettingFromUsLabel = new QLabel(this);
-        activityGroupBoxLayout->addRow(
-            qApp->translate("tremotesf", "Peers we are uploading to:"),
-            peersGettingFromUsLabel
-        );
+        auto peersLabel = new QLabel(this);
+        activityGroupBoxLayout->addRow(qApp->translate("tremotesf", "Peers:"), peersLabel);
         auto lastActivityLabel = new QLabel(this);
         activityGroupBoxLayout->addRow(qApp->translate("tremotesf", "Last activity:"), lastActivityLabel);
         detailsTabLayout->addWidget(activityGroupBox);
@@ -208,8 +200,7 @@ namespace tremotesf {
                 const QLocale locale{};
                 seedersLabel->setText(locale.toString(mTorrent->data().totalSeedersFromTrackersCount));
                 leechersLabel->setText(locale.toString(mTorrent->data().totalLeechersFromTrackersCount));
-                peersSendingToUsLabel->setText(locale.toString(mTorrent->data().peersSendingToUsCount));
-                peersGettingFromUsLabel->setText(locale.toString(mTorrent->data().peersGettingFromUsCount));
+                peersLabel->setText(locale.toString(mTorrent->data().peersConnected));
 
                 lastActivityLabel->setText(
                     formatutils::formatDateTime(mTorrent->data().activityDate.toLocalTime(), QLocale::LongFormat)
@@ -234,8 +225,7 @@ namespace tremotesf {
                 etaLabel->clear();
                 seedersLabel->clear();
                 leechersLabel->clear();
-                peersSendingToUsLabel->clear();
-                peersGettingFromUsLabel->clear();
+                peersLabel->clear();
                 lastActivityLabel->clear();
                 totalSizeLabel->clear();
                 locationLabel->clear();

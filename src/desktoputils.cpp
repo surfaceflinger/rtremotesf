@@ -64,10 +64,6 @@ namespace tremotesf::desktoputils {
             static const QIcon qicon(":/paused.svg"_L1);
             return qicon;
         }
-        case Queued: {
-            static const QIcon qicon(":/queued.svg"_L1);
-            return qicon;
-        }
         case Seeding: {
             static const QIcon qicon(":/seeding.svg"_L1);
             return qicon;

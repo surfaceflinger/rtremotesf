@@ -19,7 +19,6 @@ namespace tremotesf::desktoputils {
         Downloading,
         Errored,
         Paused,
-        Queued,
         Seeding,
         StalledDownloading,
         StalledSeeding

@@ -282,8 +282,7 @@ namespace tremotesf {
             return;
         case TorrentData::UpdateKey::PeersConnected: {
             const auto peers = value.toInt();
-            setChanged(peersSendingToUsCount, peers, changed);
-            setChanged(peersGettingFromUsCount, peers, changed);
+            setChanged(peersConnected, peers, changed);
             return;
         }
         case TorrentData::UpdateKey::DoneDate:
@@ -359,7 +358,6 @@ namespace tremotesf {
             changed
         );
         setChanged(ratio, totalDownloaded > 0 ? static_cast<double>(totalUploaded) / totalDownloaded : 0.0, changed);
-        setChanged(metadataComplete, !isMeta, changed);
         setChanged(magnetLink, "magnet:?xt=urn:btih:"_L1 + hashString, changed);
 
         Status newStatus{};

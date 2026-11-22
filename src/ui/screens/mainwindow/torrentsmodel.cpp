@@ -64,11 +64,7 @@ namespace tremotesf {
                         return statusIcon(StalledDownloading);
                     }
                     return statusIcon(Downloading);
-                case TorrentData::Status::QueuedForDownloading:
-                case TorrentData::Status::QueuedForSeeding:
-                    return statusIcon(Queued);
                 case TorrentData::Status::Checking:
-                case TorrentData::Status::QueuedForChecking:
                     return statusIcon(Checking);
                 }
                 break;
@@ -125,14 +121,6 @@ namespace tremotesf {
                     }
                     //: Torrent status
                     return qApp->translate("tremotesf", "Seeding", "Torrent status");
-                case TorrentData::Status::QueuedForDownloading:
-                case TorrentData::Status::QueuedForSeeding:
-                    if (torrent->data().hasError()) {
-                        //: Torrent status while torrent also has an error. %1 is error string
-                        return qApp->translate("tremotesf", "Queued (%1)").arg(torrent->data().errorString);
-                    }
-                    //: Torrent status
-                    return qApp->translate("tremotesf", "Queued");
                 case TorrentData::Status::Checking:
                     if (torrent->data().hasError()) {
                         //: Torrent status while torrent also has an error. %1 is error string
@@ -140,14 +128,6 @@ namespace tremotesf {
                     }
                     //: Torrent status
                     return qApp->translate("tremotesf", "Checking");
-                case TorrentData::Status::QueuedForChecking:
-                    if (torrent->data().hasError()) {
-                        //: Torrent status while torrent also has an error. %1 is error string
-                        return qApp->translate("tremotesf", "Queued for checking (%1)")
-                            .arg(torrent->data().errorString);
-                    }
-                    //: Torrent status
-                    return qApp->translate("tremotesf", "Queued for checking");
                 }
                 break;
             }
@@ -168,10 +148,8 @@ namespace tremotesf {
                 return torrent->data().totalSeedersFromTrackersCount;
             case Column::Leechers:
                 return torrent->data().totalLeechersFromTrackersCount;
-            case Column::PeersSendingToUs:
-                return torrent->data().peersSendingToUsCount;
-            case Column::PeersGettingFromUs:
-                return torrent->data().peersGettingFromUsCount;
+            case Column::Peers:
+                return torrent->data().peersConnected;
             case Column::DownloadSpeed:
                 return formatutils::formatByteSpeed(torrent->data().downloadSpeed);
             case Column::UploadSpeed:
@@ -313,12 +291,9 @@ namespace tremotesf {
         case Column::Leechers:
             //: Torrents list column name, number of leechers reported by trackers
             return qApp->translate("tremotesf", "Leechers");
-        case Column::PeersSendingToUs:
-            //: Torrents list column name, number of peers that we are downloading from
-            return qApp->translate("tremotesf", "Downloading from peers");
-        case Column::PeersGettingFromUs:
-            //: Torrents list column name, number of peers that we are uploading to
-            return qApp->translate("tremotesf", "Uploading to peers");
+        case Column::Peers:
+            //: Torrents list column name, number of connected peers
+            return qApp->translate("tremotesf", "Peers");
         case Column::DownloadSpeed:
             //: Torrents list column name
             return qApp->translate("tremotesf", "Down Speed");
@@ -365,39 +340,37 @@ namespace tremotesf {
     Rpc* TorrentsModel::rpc() const { return mRpc; }
 
     void TorrentsModel::setRpc(Rpc* rpc) {
-        if (rpc != mRpc) {
-            if (const auto oldRpc = mRpc.data(); oldRpc) {
-                QObject::disconnect(oldRpc, nullptr, this, nullptr);
-            }
-            mRpc = rpc;
-            if (rpc) {
-                QObject::connect(rpc, &Rpc::onAboutToAddTorrents, this, [=, this](size_t count) {
-                    const auto first = mRpc->torrentsCount();
-                    beginInsertRows({}, first, first + static_cast<int>(count) - 1);
-                });
-
-                QObject::connect(rpc, &Rpc::onAddedTorrents, this, [=, this] { endInsertRows(); });
-
-                QObject::connect(rpc, &Rpc::onAboutToRemoveTorrents, this, [=, this](size_t first, size_t last) {
-                    beginRemoveRows({}, static_cast<int>(first), static_cast<int>(last - 1));
-                });
-
-                QObject::connect(rpc, &Rpc::onRemovedTorrents, this, [=, this] { endRemoveRows(); });
-
-                QObject::connect(rpc, &Rpc::onChangedTorrents, this, [=, this](size_t first, size_t last) {
-                    emit dataChanged(
-                        index(static_cast<int>(first), 0),
-                        index(static_cast<int>(last - 1), columnCount() - 1)
-                    );
-                });
-
-                const auto count = rpc->torrentsCount();
-                if (count != 0) {
-                    beginInsertRows({}, 0, count - 1);
-                    endInsertRows();
-                }
-            }
+        if (rpc == mRpc) {
+            return;
         }
+        if (const auto oldRpc = mRpc.data(); oldRpc) {
+            QObject::disconnect(oldRpc, nullptr, this, nullptr);
+        }
+
+        beginResetModel();
+        mRpc = rpc;
+        if (rpc) {
+            QObject::connect(rpc, &Rpc::onAboutToAddTorrents, this, [=, this](size_t count) {
+                const auto first = mRpc->torrentsCount();
+                beginInsertRows({}, first, first + static_cast<int>(count) - 1);
+            });
+
+            QObject::connect(rpc, &Rpc::onAddedTorrents, this, [=, this] { endInsertRows(); });
+
+            QObject::connect(rpc, &Rpc::onAboutToRemoveTorrents, this, [=, this](size_t first, size_t last) {
+                beginRemoveRows({}, static_cast<int>(first), static_cast<int>(last - 1));
+            });
+
+            QObject::connect(rpc, &Rpc::onRemovedTorrents, this, [=, this] { endRemoveRows(); });
+
+            QObject::connect(rpc, &Rpc::onChangedTorrents, this, [=, this](size_t first, size_t last) {
+                emit dataChanged(
+                    index(static_cast<int>(first), 0),
+                    index(static_cast<int>(last - 1), columnCount() - 1)
+                );
+            });
+        }
+        endResetModel();
     }
 
     Torrent* TorrentsModel::torrentAtIndex(const QModelIndex& index) const { return torrentAtRow(index.row()); }

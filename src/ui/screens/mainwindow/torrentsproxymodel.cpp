@@ -139,22 +139,13 @@ namespace tremotesf {
                 || (torrent->data().status == TorrentData::Status::Seeding && !torrent->data().isSeedingStalled())
             );
         case Downloading:
-            return (
-                torrent->data().status == TorrentData::Status::Downloading
-                || torrent->data().status == TorrentData::Status::QueuedForDownloading
-            );
+            return torrent->data().status == TorrentData::Status::Downloading;
         case Seeding:
-            return (
-                torrent->data().status == TorrentData::Status::Seeding
-                || torrent->data().status == TorrentData::Status::QueuedForSeeding
-            );
+            return torrent->data().status == TorrentData::Status::Seeding;
         case Paused:
             return torrent->data().status == TorrentData::Status::Paused;
         case Checking:
-            return (
-                torrent->data().status == TorrentData::Status::Checking
-                || torrent->data().status == TorrentData::Status::QueuedForChecking
-            );
+            return torrent->data().status == TorrentData::Status::Checking;
         case Errored:
             return torrent->data().hasError();
         default:

@@ -20,7 +20,6 @@ namespace tremotesf {
         enum class Status {
             Inactive,
             WaitingForUpdate,
-            QueuedForUpdate,
             Updating,
         };
         Q_ENUM(Status)
