@@ -31,7 +31,7 @@ namespace tremotesf {
         enum class Status { Paused, Checking, Downloading, Seeding };
         Q_ENUM(Status)
 
-        enum class Error { None, TrackerError, LocalError };
+        enum class Error { None, LocalError };
         Q_ENUM(Error)
 
         enum class Priority { Low, Normal, High };

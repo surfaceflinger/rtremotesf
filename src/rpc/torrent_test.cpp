@@ -136,12 +136,12 @@ private slots:
         QCOMPARE(torrent.data().error, TorrentData::Error::LocalError);
     }
 
-    void trackerErrorIsTrackerError() {
+    void trackerMessageIsNotTorrentError() {
         Rpc rpc;
         auto values = torrentValues();
         values[15] = QString("Tracker: [v4 : 403 Forbidden]");
         Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, values, &rpc);
-        QCOMPARE(torrent.data().error, TorrentData::Error::TrackerError);
+        QCOMPARE(torrent.data().error, TorrentData::Error::None);
     }
 
     void nonListTrackerRowIsIgnored() {

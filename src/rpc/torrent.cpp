@@ -376,9 +376,7 @@ namespace tremotesf {
         Error newError{};
         if (hashingFailed) {
             newError = Error::LocalError;
-        } else if (errorString.startsWith("Tracker:"_L1)) {
-            newError = Error::TrackerError;
-        } else if (!errorString.isEmpty()) {
+        } else if (!errorString.isEmpty() && !errorString.startsWith("Tracker:"_L1)) {
             newError = Error::LocalError;
         }
         setChanged(error, newError, changed);
