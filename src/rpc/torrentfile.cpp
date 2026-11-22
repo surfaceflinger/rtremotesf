@@ -32,11 +32,8 @@ namespace tremotesf {
             case 2:
                 priority = Priority::High;
                 break;
-            case 1:
-                priority = Priority::Normal;
-                break;
             default:
-                priority = Priority::Low;
+                priority = Priority::Normal;
                 break;
             }
         }
@@ -53,11 +50,8 @@ namespace tremotesf {
             case 2:
                 newPriority = Priority::High;
                 break;
-            case 1:
-                newPriority = Priority::Normal;
-                break;
             default:
-                newPriority = Priority::Low;
+                newPriority = Priority::Normal;
                 break;
             }
             setChanged(priority, newPriority, changed);

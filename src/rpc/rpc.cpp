@@ -632,6 +632,8 @@ namespace tremotesf {
         int value = 1;
         switch (priority) {
         case TorrentFile::Priority::Low:
+            // shortcut: rtorrent has no low file priority, Low is stored as Normal
+            [[fallthrough]];
         case TorrentFile::Priority::Normal:
             value = 1;
             break;

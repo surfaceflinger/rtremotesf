@@ -207,15 +207,6 @@ namespace tremotesf {
         });
 
         //: File loading priority
-        QAction* lowPriorityAction = priorityGroup.addAction(qApp->translate("tremotesf", "&Low"));
-        lowPriorityAction->setCheckable(true);
-        QObject::connect(lowPriorityAction, &QAction::triggered, this, [=, this](bool checked) {
-            if (checked) {
-                mModel->setFilesPriority(sourceIndexes, TorrentFilesModelEntry::Priority::Low);
-            }
-        });
-
-        //: File loading priority
         QAction* mixedPriorityAction = priorityGroup.addAction(qApp->translate("tremotesf", "Mixed"));
         mixedPriorityAction->setCheckable(true);
         mixedPriorityAction->setChecked(true);
@@ -233,8 +224,6 @@ namespace tremotesf {
 
             switch (entry->priority()) {
             case TorrentFilesModelEntry::Priority::Low:
-                lowPriorityAction->setChecked(true);
-                break;
             case TorrentFilesModelEntry::Priority::Normal:
                 normalPriorityAction->setChecked(true);
                 break;
