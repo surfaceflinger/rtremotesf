@@ -1009,9 +1009,23 @@ namespace tremotesf {
     }
 
     Coroutine<> Rpc::updateData() {
-        debug().log("Updating data");
-        co_await waitAll(getServerSettings(), getTorrents(), getServerStats());
-        debug().log("Finished updating data");
+        if (mUpdateInProgress) {
+            mUpdateRequested = true;
+            co_return;
+        }
+
+        mUpdateInProgress = true;
+        struct Guard {
+            bool& flag;
+            ~Guard() { flag = false; }
+        } guard{mUpdateInProgress};
+
+        do {
+            mUpdateRequested = false;
+            debug().log("Updating data");
+            co_await waitAll(getServerSettings(), getTorrents(), getServerStats());
+            debug().log("Finished updating data");
+        } while (mUpdateRequested);
     }
 
     Coroutine<> Rpc::checkIfServerIsLocal() {

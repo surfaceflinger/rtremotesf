@@ -220,6 +220,8 @@ namespace tremotesf {
         impl::RequestRouter* mRequestRouter{};
 
         bool mAutoReconnectEnabled{};
+        bool mUpdateInProgress{};
+        bool mUpdateRequested{};
 
         std::optional<bool> mServerIsLocal{};
 
