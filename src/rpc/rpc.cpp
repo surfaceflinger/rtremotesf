@@ -436,6 +436,7 @@ namespace tremotesf {
         appendFileCommands(unwantedFiles, 0);
         appendFileCommands(highPriorityFiles, 2);
         appendFileCommands(lowPriorityFiles, 1);
+        commands.push_back({"d.update_priorities"_L1, {hash}});
 
         const auto response = co_await callBatch(std::move(commands));
         if (!response.success) {
@@ -444,12 +445,13 @@ namespace tremotesf {
     }
 
     void Rpc::startTorrents(std::span<const int> ids) {
-        mBackgroundRequestsCoroutineScope.launch(callBatch(commandsForTorrents(ids, "d.start"_L1), true));
+        auto commands = commandsForTorrents(ids, "d.update_priorities"_L1);
+        const auto startCommands = commandsForTorrents(ids, "d.start"_L1);
+        commands.insert(commands.end(), startCommands.begin(), startCommands.end());
+        mBackgroundRequestsCoroutineScope.launch(callBatch(std::move(commands), true));
     }
 
-    void Rpc::startTorrentsNow(std::span<const int> ids) {
-        mBackgroundRequestsCoroutineScope.launch(callBatch(commandsForTorrents(ids, "d.start"_L1), true));
-    }
+    void Rpc::startTorrentsNow(std::span<const int> ids) { startTorrents(ids); }
 
     void Rpc::pauseTorrents(std::span<const int> ids) {
         mBackgroundRequestsCoroutineScope.launch(callBatch(commandsForTorrents(ids, "d.stop"_L1), true));
@@ -586,10 +588,11 @@ namespace tremotesf {
             return;
         }
         std::vector<Command> commands{};
-        commands.reserve(fileIds.size());
+        commands.reserve(fileIds.size() + 1);
         for (const int fileId : fileIds) {
             commands.push_back({"f.priority.set"_L1, {hash + ":f"_L1 + QString::number(fileId), wanted ? 1 : 0}});
         }
+        commands.push_back({"d.update_priorities"_L1, {hash}});
         mBackgroundRequestsCoroutineScope.launch(callBatch(std::move(commands), true));
     }
 
@@ -610,10 +613,11 @@ namespace tremotesf {
         }
 
         std::vector<Command> commands{};
-        commands.reserve(fileIds.size());
+        commands.reserve(fileIds.size() + 1);
         for (const int fileId : fileIds) {
             commands.push_back({"f.priority.set"_L1, {hash + ":f"_L1 + QString::number(fileId), value}});
         }
+        commands.push_back({"d.update_priorities"_L1, {hash}});
         mBackgroundRequestsCoroutineScope.launch(callBatch(std::move(commands), true));
     }
 
