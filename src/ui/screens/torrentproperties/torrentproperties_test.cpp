@@ -8,6 +8,7 @@
 
 #include "rpc/rpc.h"
 #include "rpc/torrent.h"
+#include "peersmodel.h"
 #include "torrentfilesmodel.h"
 #include "torrentpropertiesdialog.h"
 
@@ -127,6 +128,24 @@ private slots:
         QTRY_COMPARE(model.rowCount(QModelIndex{}), 1);
         const auto root = model.index(0, 0, QModelIndex{});
         QTRY_COMPARE(model.rowCount(root), 4);
+    }
+
+    void peersModelHandlesMultipleRemovals() {
+        Rpc rpc;
+        auto torrent = makeTorrent(&rpc);
+        PeersModel model;
+        model.setTorrent(torrent.get(), false);
+
+        const auto peerRow = [](const QString& address) {
+            return QVariantList{address, QString("client"), qint64(0), qint64(0), 100};
+        };
+        torrent->updatePeers(QVariantList{peerRow("A"), peerRow("B"), peerRow("C"), peerRow("D")});
+        QCOMPARE(model.rowCount(QModelIndex{}), 4);
+
+        torrent->updatePeers(QVariantList{peerRow("B"), peerRow("D")});
+        QCOMPARE(model.rowCount(QModelIndex{}), 2);
+        QCOMPARE(model.data(model.index(0, 0, QModelIndex{}), Qt::DisplayRole).toString(), "B"_L1);
+        QCOMPARE(model.data(model.index(1, 0, QModelIndex{}), Qt::DisplayRole).toString(), "D"_L1);
     }
 };
 
