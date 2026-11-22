@@ -4,6 +4,27 @@
 
 target_sources(tremotesf_objects PRIVATE icons/status/status.qrc icons/turtle.qrc)
 
+function(download_with_retries url path expected_hash)
+    get_filename_component(download_directory "${path}" DIRECTORY)
+    file(MAKE_DIRECTORY "${download_directory}")
+    foreach(attempt RANGE 1 3)
+        message(STATUS "Downloading ${url} to ${path} (attempt ${attempt})")
+        file(
+            DOWNLOAD "${url}" "${path}"
+            SHOW_PROGRESS
+            TLS_VERIFY ON
+            EXPECTED_HASH "${expected_hash}"
+            STATUS download_status
+        )
+        list(GET download_status 0 download_status)
+        if (download_status EQUAL 0)
+            return()
+        endif()
+        file(REMOVE "${path}")
+    endforeach()
+    message(FATAL_ERROR "Download failed: ${url}")
+endfunction()
+
 if (TREMOTESF_UNIX_FREEDESKTOP)
     find_package(Gettext 0.22.5 REQUIRED)
 
@@ -42,18 +63,11 @@ elseif (WIN32 OR APPLE)
     set(hicolor_download_path "${CMAKE_CURRENT_BINARY_DIR}/hicolor/index.theme")
     if (NOT EXISTS "${hicolor_download_path}")
         set(hicolor_url "https://gitlab.freedesktop.org/xdg/default-icon-theme/-/raw/v0.18/index.theme?ref_type=tags&inline=false")
-        message(STATUS "Downloading ${hicolor_url} to ${hicolor_download_path}")
-        file(
-            DOWNLOAD "${hicolor_url}" "${hicolor_download_path}"
-            SHOW_PROGRESS
-            TLS_VERIFY ON
-            EXPECTED_HASH SHA256=a02db5e1b203d981701481bbef8b6fae1c576baf34927eecbc0feae0d2cb9bc5
-            STATUS download_status
+        download_with_retries(
+            "${hicolor_url}"
+            "${hicolor_download_path}"
+            "SHA256=a02db5e1b203d981701481bbef8b6fae1c576baf34927eecbc0feae0d2cb9bc5"
         )
-        list(GET download_status 0 download_status)
-        if (NOT download_status EQUAL 0)
-            message(FATAL_ERROR "Download failed")
-        endif()
     endif()
     install(FILES "${hicolor_download_path}" DESTINATION "${TREMOTESF_EXTERNAL_RESOURCES_PATH}/icons/hicolor")
 
@@ -62,18 +76,11 @@ elseif (WIN32 OR APPLE)
     string(REGEX REPLACE "^(.*)\\..*" "\\1" breeze_version_without_patch "${breeze_version}")
     if (NOT EXISTS "${breeze_download_path}")
         set(breeze_url "https://download.kde.org/stable/frameworks/${breeze_version_without_patch}/breeze-icons-${breeze_version}.tar.xz")
-        message(STATUS "Downloading ${breeze_url} to ${breeze_download_path}")
-        file(
-            DOWNLOAD "${breeze_url}" "${breeze_download_path}"
-            SHOW_PROGRESS
-            TLS_VERIFY ON
-            EXPECTED_HASH SHA256=82ab1c13f782cb37176e7c13c5fb2c77536a65f24b85d09127f3575f917fb56d
-            STATUS download_status
+        download_with_retries(
+            "${breeze_url}"
+            "${breeze_download_path}"
+            "SHA256=82ab1c13f782cb37176e7c13c5fb2c77536a65f24b85d09127f3575f917fb56d"
         )
-        list(GET download_status 0 download_status)
-        if (NOT download_status EQUAL 0)
-            message(FATAL_ERROR "Download failed")
-        endif()
         message(STATUS "Extracting ${breeze_download_path} to ${CMAKE_CURRENT_BINARY_DIR}")
         file(ARCHIVE_EXTRACT INPUT "${breeze_download_path}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
