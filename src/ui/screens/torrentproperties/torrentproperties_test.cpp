@@ -91,6 +91,17 @@ private slots:
         const auto root = model.index(0, 0, QModelIndex{});
         QCOMPARE(root.data().toString(), "test torrent"_L1);
         QTRY_COMPARE(model.rowCount(root), 4);
+
+        QModelIndex rarbgIndex{};
+        for (int row = 0; row < model.rowCount(root); ++row) {
+            const auto index = model.index(row, 0, root);
+            if (index.data().toString() == "RARBG.txt"_L1) {
+                rarbgIndex = index;
+                break;
+            }
+        }
+        QVERIFY(rarbgIndex.isValid());
+        QCOMPARE(model.localFilePath(rarbgIndex), "/downloads/test torrent/RARBG.txt"_L1);
     }
 };
 

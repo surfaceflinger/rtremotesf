@@ -109,7 +109,7 @@ namespace tremotesf {
         }
         const auto* entry = static_cast<const TorrentFilesModelEntry*>(index.internalPointer());
         QString path(entry->path());
-        return localTorrentRootDirectoryPath(mRpc, mTorrent) % '/' % path;
+        return localTorrentDownloadDirectoryPath(mRpc, mTorrent) % '/' % path;
     }
 
     bool TorrentFilesModel::isWanted(const QModelIndex& index) const {
