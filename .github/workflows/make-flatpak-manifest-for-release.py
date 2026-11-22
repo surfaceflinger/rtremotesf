@@ -14,14 +14,14 @@ MANIFEST_FILENAME = "org.equeim.Rtremotesf.json"
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("tag",
-                        help="Git tag")
-    parser.add_argument("archive",
-                        help="Release archive filename")
+    parser.add_argument("tag", help="Git tag")
+    parser.add_argument("archive", help="Release archive filename")
     args = parser.parse_args()
     with open(MANIFEST_FILENAME, "r", encoding="utf-8") as f:
         manifest = json.load(f)
-    tremotesf_module = next(module for module in manifest["modules"] if module["name"] == "tremotesf")
+    tremotesf_module = next(
+        module for module in manifest["modules"] if module["name"] == "rtremotesf"
+    )
     del tremotesf_module["build-options"]["env"]["ASAN_OPTIONS"]
     tremotesf_module["config-opts"].remove("-DTREMOTESF_ASAN=ON")
 
@@ -29,8 +29,12 @@ def main():
         archive_sha256 = sha256(f.read()).hexdigest()
 
     tremotesf_module["sources"] = [
-        {"type": "archive", "url": f"https://github.com/equeim/tremotesf2/releases/download/{args.tag}/{PurePath(args.archive).name}",
-         "sha256": archive_sha256}]
+        {
+            "type": "archive",
+            "url": f"https://github.com/surfaceflinger/rtremotesf/releases/download/{args.tag}/{PurePath(args.archive).name}",
+            "sha256": archive_sha256,
+        }
+    ]
     with open(MANIFEST_FILENAME, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=4)
 

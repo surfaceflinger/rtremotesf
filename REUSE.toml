@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: CC0-1.0
 
 version = 1
-SPDX-PackageName = "Tremotesf"
+SPDX-PackageName = "rtremotesf"
 SPDX-PackageSupplier = "Alexey Rochev <equeim@gmail.com>"
-SPDX-PackageDownloadLocation = "https://github.com/equeim/tremotesf2"
+SPDX-PackageDownloadLocation = "https://github.com/surfaceflinger/rtremotesf"
 
 [[annotations]]
 path = ["CHANGELOG.md", "README.md", "**.json", "debian/**", "src/test-torrents/**.torrent"]
@@ -26,7 +26,13 @@ SPDX-FileCopyrightText = ["2009 Mateusz Tobola", "2023 Alexey Rochev"]
 SPDX-License-Identifier = "GPL-2.0-or-later"
 
 [[annotations]]
-path = ["data/icons/hicolor/**/apps/org.equeim.Tremotesf.png", "data/icons/hicolor/scalable/apps/org.equeim.Tremotesf.svg", "data/icons/macos/tremotesf.icns", "src/tremotesf.ico"]
+path = ["data/icons/hicolor/**/apps/rtremotesf.png", "data/icons/hicolor/scalable/apps/rtremotesf.svg", "data/icons/macos/rtremotesf.icns", "src/rtremotesf.ico"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Transmission authors and contributors"
 SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "flake.lock"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 nat <nat@nekopon.pl>"
+SPDX-License-Identifier = "CC0-1.0"

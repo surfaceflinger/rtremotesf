@@ -16,9 +16,9 @@ License:    GPL-3.0-or-later
 %else
 License:    GPLv3+
 %endif
-URL:        https://github.com/equeim/tremotesf2
+URL:        https://github.com/surfaceflinger/rtremotesf
 
-Source0:    https://github.com/equeim/tremotesf2/releases/download/%{version}/%{name}-%{version}.tar.zst
+Source0:    https://github.com/surfaceflinger/rtremotesf/releases/download/%{version}/%{name}-%{version}.tar.zst
 
 Requires:      hicolor-icon-theme
 BuildRequires: cmake

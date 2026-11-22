@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 nat <nat@nekopon.pl>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 {
   stdenv,
   lib,
