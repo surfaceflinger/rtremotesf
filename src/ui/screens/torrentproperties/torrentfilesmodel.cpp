@@ -77,6 +77,7 @@ namespace tremotesf {
             mTorrent->setFilesEnabled(false);
         }
         mTorrent = torrent;
+        mPendingTreeRebuild = false;
         resetTree();
         if (mTorrent) {
             QObject::connect(mTorrent, &Torrent::filesUpdated, this, &TorrentFilesModel::update);
@@ -125,7 +126,11 @@ namespace tremotesf {
             return;
         }
         if (mFiles.size() != mTorrent->files().size()) {
-            mCoroutineScope.launch(createTree());
+            if (mCreatingTree) {
+                mPendingTreeRebuild = true;
+            } else {
+                mCoroutineScope.launch(createTree());
+            }
             return;
         }
         if (mLoaded) {
@@ -161,6 +166,10 @@ namespace tremotesf {
 
         if (mTorrent != torrent) {
             mCreatingTree = false;
+            if (mPendingTreeRebuild) {
+                mPendingTreeRebuild = false;
+                mCoroutineScope.launch(createTree());
+            }
             co_return;
         }
 
@@ -171,6 +180,13 @@ namespace tremotesf {
 
         setLoaded(true);
         mCreatingTree = false;
+
+        if (mPendingTreeRebuild) {
+            mPendingTreeRebuild = false;
+            mCoroutineScope.launch(createTree());
+        } else if (mFiles.size() != mTorrent->files().size()) {
+            mCoroutineScope.launch(createTree());
+        }
     }
 
     void TorrentFilesModel::resetTree() {
