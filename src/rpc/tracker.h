@@ -9,8 +9,8 @@
 #include <QObject>
 #include <QString>
 #include <QTimeZone>
+#include <QVariantList>
 
-class QJsonObject;
 class QUrl;
 
 namespace tremotesf {
@@ -18,18 +18,14 @@ namespace tremotesf {
         Q_GADGET
     public:
         enum class Status {
-            // Tracker is inactive, possibly due to error
             Inactive,
-            // Waiting for announce/scrape
             WaitingForUpdate,
-            // Queued for immediate announce/scrape
             QueuedForUpdate,
-            // We are announcing/scraping
             Updating,
         };
         Q_ENUM(Status)
 
-        explicit Tracker(int id, const QJsonObject& trackerMap);
+        explicit Tracker(int id, const QVariantList& row);
 
         int id() const { return mId; };
         const QString& announce() const { return mAnnounce; };
@@ -45,9 +41,7 @@ namespace tremotesf {
         int leechers() const { return mLeechers; }
         const QDateTime& nextUpdateTime() const { return mNextUpdateTime; };
 
-        bool update(const QJsonObject& trackerMap);
-
-        void replaceAnnounceUrl(const QString& announceUrl) { mAnnounce = announceUrl; }
+        bool update(const QVariantList& row);
 
         bool operator==(const Tracker& other) const = default;
 

@@ -92,9 +92,6 @@ namespace tremotesf {
     private:
         Server getServer(const QString& name) const;
         void updateMountedDirectories();
-        void migrateClientCertificateSettings();
-        void migrateServerCertificateSettings();
-        void setValueVerbose(QLatin1String key, const QVariant& value);
 
         QSettings* mSettings{};
         std::vector<MountedDirectory> mCurrentServerMountedDirectories{};

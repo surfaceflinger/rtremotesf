@@ -6,15 +6,12 @@
 #define TREMOTESF_RPC_PEER_H
 
 #include <QString>
-
-class QJsonObject;
+#include <QVariantList>
 
 namespace tremotesf {
     struct Peer {
-        static constexpr auto addressKey = QLatin1String("address");
-
-        explicit Peer(QString&& address, const QJsonObject& peerJson);
-        bool update(const QJsonObject& peerJson);
+        explicit Peer(QString address, const QVariantList& row);
+        bool update(const QVariantList& row);
 
         bool operator==(const Peer& other) const = default;
 

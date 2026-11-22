@@ -5,6 +5,7 @@
 #ifndef TREMOTESF_RPC_RPC_H
 #define TREMOTESF_RPC_RPC_H
 
+#include <chrono>
 #include <map>
 #include <memory>
 #include <optional>
@@ -12,8 +13,10 @@
 
 #include <QByteArray>
 #include <QObject>
+#include <QVariantMap>
 
 #include "coroutines/scope.h"
+#include "requestrouter.h"
 #include "torrent.h"
 
 #ifdef Q_MOC_RUN
@@ -39,31 +42,15 @@ namespace tremotesf {
         enum class ProxyType { Default, Http, Socks5, None };
         Q_ENUM(ProxyType)
 
-        enum class ServerCertificateMode { None, SelfSigned, CustomRoot };
-        Q_ENUM(ServerCertificateMode)
-
         QString address{};
         int port{};
-        QString apiPath{};
+        QString socketPath{};
 
         ProxyType proxyType{ProxyType::Default};
         QString proxyHostname{};
         int proxyPort{};
         QString proxyUser{};
         QString proxyPassword{};
-
-        bool https{};
-
-        ServerCertificateMode serverCertificateMode{};
-        QByteArray serverRootCertificate{};
-        QByteArray serverLeafCertificate{};
-
-        bool clientCertificateEnabled{};
-        QByteArray clientCertificate{};
-
-        bool authentication{};
-        QString username{};
-        QString password{};
 
         int updateInterval{};
         int timeout{};
@@ -77,15 +64,7 @@ namespace tremotesf {
     enum class RpcConnectionState { Disconnected, Connecting, Connected };
     Q_ENUM_NS(RpcConnectionState)
 
-    enum class RpcError {
-        NoError,
-        TimedOut,
-        ConnectionError,
-        AuthenticationError,
-        ParseError,
-        ServerIsTooNew,
-        ServerIsTooOld
-    };
+    enum class RpcError { NoError, TimedOut, ConnectionError, ParseError };
     Q_ENUM_NS(RpcError)
 
     class Rpc : public QObject {
@@ -140,7 +119,6 @@ namespace tremotesf {
             std::vector<int> unwantedFiles,
             std::vector<int> highPriorityFiles,
             std::vector<int> lowPriorityFiles,
-            std::map<QString, QString> renamedFiles,
             TorrentData::Priority bandwidthPriority,
             bool start,
             DeleteFileMode deleteFileMode,
@@ -160,24 +138,18 @@ namespace tremotesf {
         void pauseTorrents(std::span<const int> ids);
         void removeTorrents(std::span<const int> ids, bool deleteFiles);
         void checkTorrents(std::span<const int> ids);
-        void moveTorrentsToTop(std::span<const int> ids);
-        void moveTorrentsUp(std::span<const int> ids);
-        void moveTorrentsDown(std::span<const int> ids);
-        void moveTorrentsToBottom(std::span<const int> ids);
-
         void reannounceTorrents(std::span<const int> ids);
 
-        void setSessionProperty(QString property, QJsonValue value);
-        void setSessionProperties(QJsonObject properties);
-        void setTorrentProperty(int id, QString property, QJsonValue value, bool updateIfSuccessful = false);
-        void setTorrentsLocation(std::span<const int> ids, QString location, bool moveFiles);
+        void setSessionProperty(QString command, QVariant value);
+        void setSessionProperties(QVariantMap properties);
         void setTorrentsLabels(std::span<const int> ids, std::span<const QString> labels);
+        void addTorrentTracker(int id, const QString& announce, int group);
+        void setTorrentPriority(int id, TorrentData::Priority priority);
+        void setTorrentPeersLimit(int id, int limit);
+        void setTorrentFilesWanted(int id, std::span<const int> fileIds, bool wanted);
+        void setTorrentFilesPriority(int id, std::span<const int> fileIds, TorrentFile::Priority priority);
         void getTorrentFiles(int torrentId);
         void getTorrentPeers(int torrentId);
-
-        void renameTorrentFile(int torrentId, QString filePath, QString newName);
-
-        Coroutine<std::optional<qint64>> getFreeSpaceForPath(QString path);
 
         void shutdownServer();
 
@@ -186,7 +158,17 @@ namespace tremotesf {
         void resetStateOnConnectionStateChanged(ConnectionState oldConnectionState);
         void emitSignalsOnConnectionStateChanged(ConnectionState oldConnectionState);
 
-        Coroutine<> postRequest(QLatin1String method, QJsonObject arguments, bool updateIfSuccessful = true);
+        struct Command {
+            QString method;
+            QVariantList parameters;
+        };
+
+        Coroutine<impl::RequestRouter::Response> call(Command command, bool updateIfSuccessful = false);
+        Coroutine<impl::RequestRouter::Response>
+        callBatch(std::vector<Command> commands, bool updateIfSuccessful = false);
+
+        QString targetForTorrent(int id, const QString& suffix = {}) const;
+        std::vector<Command> commandsForTorrents(std::span<const int> ids, QString method) const;
 
         Coroutine<> addTorrentFileImpl(
             QString filePath,
@@ -194,7 +176,6 @@ namespace tremotesf {
             std::vector<int> unwantedFiles,
             std::vector<int> highPriorityFiles,
             std::vector<int> lowPriorityFiles,
-            std::map<QString, QString> renamedFiles,
             TorrentData::Priority bandwidthPriority,
             bool start,
             DeleteFileMode deleteFileMode,
@@ -207,15 +188,18 @@ namespace tremotesf {
             bool start,
             std::vector<QString> labels
         );
-        Coroutine<> addTorrentLinkImpl(
-            QString link, QString downloadDirectory, int bandwidthPriority, bool start, std::vector<QString> labels
+        Coroutine<> applyAddedTorrentSettings(
+            const QString& hash,
+            QString downloadDirectory,
+            std::span<const int> unwantedFiles,
+            std::span<const int> highPriorityFiles,
+            std::span<const int> lowPriorityFiles,
+            TorrentData::Priority bandwidthPriority,
+            std::span<const QString> labels
         );
-        Coroutine<> getTorrentsFiles(QJsonArray ids);
-        Coroutine<> getTorrentsPeers(QJsonArray ids);
-        Coroutine<> renameTorrentFileImpl(int torrentId, QString filePath, QString newName);
-        Coroutine<std::optional<qint64>> getDownloadDirFreeSpaceImpl();
-        Coroutine<std::optional<qint64>> getDownloadDirFreeSpaceLegacyMethod();
-        Coroutine<std::optional<qint64>> getFreeSpaceForPathImpl(QString path);
+        Coroutine<> removeTorrentsImpl(std::vector<QString> hashes, bool deleteFiles);
+        Coroutine<> getTorrentsFiles(std::vector<QString> hashes);
+        Coroutine<> getTorrentsPeers(std::vector<QString> hashes);
         Coroutine<> shutdownServerImpl();
 
         Coroutine<> getServerSettings();
@@ -238,7 +222,6 @@ namespace tremotesf {
         bool mAutoReconnectEnabled{};
 
         std::optional<bool> mServerIsLocal{};
-        QByteArray mGetTorrentsRequestData{};
 
         std::chrono::seconds mUpdateInterval{};
         std::chrono::seconds mAutoReconnectInterval{};
@@ -246,6 +229,7 @@ namespace tremotesf {
         ServerSettings* mServerSettings{};
         std::vector<std::unique_ptr<Torrent>> mTorrents{};
         ServerStats* mServerStats{};
+        int mNextTorrentId{};
 
         Status mStatus{};
 

@@ -8,7 +8,6 @@
 #include <fmt/format.h>
 
 #include "tracker.h"
-#include "torrent.h"
 
 using namespace Qt::StringLiterals;
 using namespace tremotesf::impl;
@@ -45,32 +44,6 @@ private slots:
     void registrableDomainUnknownTest() {
         QCOMPARE(registrableDomainFromUrl(QUrl("https://foobar")), QString("foobar"));
         QCOMPARE(registrableDomainFromUrl(QUrl("https://")), QString());
-    }
-
-    void mergingTackersCompletelyNewTest() {
-        const auto existingTrackers = std::vector{std::set{QString("foo")}, std::set{QString("bar")}};
-        const auto newTrackers = std::vector{std::set{QString("lol")}, std::set{QString("nope")}};
-        const auto expectedResult = std::vector{
-            std::set{QString("foo")},
-            std::set{QString("bar")},
-            std::set{QString("lol")},
-            std::set{QString("nope")}
-        };
-        const auto merged = mergeTrackers(existingTrackers, newTrackers);
-        QCOMPARE(merged, expectedResult);
-    }
-
-    void mergingTrackersAddingToExistingTierTest() {
-        const auto existingTrackers = std::vector{std::set{QString("foo")}, std::set{QString("bar")}};
-        const auto newTrackers =
-            std::vector{std::set{QString("foo"), QString("foo.alt1"), QString("foo.alt2")}, std::set{QString("nope")}};
-        const auto expectedResult = std::vector{
-            std::set{QString("foo"), QString("foo.alt1"), QString("foo.alt2")},
-            std::set{QString("bar")},
-            std::set{QString("nope")}
-        };
-        const auto merged = mergeTrackers(existingTrackers, newTrackers);
-        QCOMPARE(merged, expectedResult);
     }
 };
 

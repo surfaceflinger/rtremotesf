@@ -4,38 +4,64 @@
 
 #include "torrentfile.h"
 
-#include <QJsonObject>
+#include <algorithm>
 
-#include "jsonutils.h"
 #include "stdutils.h"
 
-using namespace Qt::StringLiterals;
-
 namespace tremotesf {
-    using namespace impl;
     namespace {
-        constexpr auto priorityMapper = EnumMapper(
-            std::array{
-                EnumMapping(TorrentFile::Priority::Low, -1),
-                EnumMapping(TorrentFile::Priority::Normal, 0),
-                EnumMapping(TorrentFile::Priority::High, 1)
+        qint64 completedSizeFromChunks(const QVariantList& row, qint64 size, qint64 chunkSize) {
+            if (row.size() < 3) {
+                return 0;
             }
-        );
+            const auto completedChunks = row.at(2).toLongLong();
+            return std::min(size, completedChunks * chunkSize);
+        }
     }
 
-    TorrentFile::TorrentFile(const QJsonObject& fileMap, const QJsonObject& fileStatsMap)
-        : path(fileMap.value("name"_L1).toString()), size(fileMap.value("length"_L1).toInteger()) {
-        update(fileStatsMap);
+    TorrentFile::TorrentFile(const QVariantList& row, qint64 chunkSize) {
+        if (row.size() >= 2) {
+            path = row.at(0).toString();
+            size = row.at(1).toLongLong();
+        }
+        completedSize = completedSizeFromChunks(row, size, chunkSize);
+        if (row.size() >= 5) {
+            const auto priorityValue = row.at(4).toInt();
+            wanted = priorityValue > 0;
+            switch (priorityValue) {
+            case 2:
+                priority = Priority::High;
+                break;
+            case 1:
+                priority = Priority::Normal;
+                break;
+            default:
+                priority = Priority::Low;
+                break;
+            }
+        }
     }
 
-    bool TorrentFile::update(const QJsonObject& fileStatsMap) {
+    bool TorrentFile::update(const QVariantList& row, qint64 chunkSize) {
         bool changed = false;
-
-        setChanged(completedSize, fileStatsMap.value("bytesCompleted"_L1).toInteger(), changed);
-        constexpr auto priorityKey = "priority"_L1;
-        setChanged(priority, priorityMapper.fromJsonValue(fileStatsMap.value(priorityKey), priorityKey), changed);
-        setChanged(wanted, fileStatsMap.value("wanted"_L1).toBool(), changed);
-
+        setChanged(completedSize, completedSizeFromChunks(row, size, chunkSize), changed);
+        if (row.size() >= 5) {
+            const auto priorityValue = row.at(4).toInt();
+            setChanged(wanted, priorityValue > 0, changed);
+            Priority newPriority{};
+            switch (priorityValue) {
+            case 2:
+                newPriority = Priority::High;
+                break;
+            case 1:
+                newPriority = Priority::Normal;
+                break;
+            default:
+                newPriority = Priority::Low;
+                break;
+            }
+            setChanged(priority, newPriority, changed);
+        }
         return changed;
     }
 }

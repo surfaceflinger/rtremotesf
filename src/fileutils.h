@@ -35,10 +35,6 @@ namespace tremotesf {
     [[maybe_unused]]
     QString resolveExternalBundledResourcesPath(QLatin1String path);
 
-    namespace impl {
-        [[nodiscard]] QString readFileAsBase64String(QFile& file);
-        [[nodiscard]] bool isTransmissionSessionIdFileExists(QByteArrayView sessionId);
-    }
 }
 
 #endif // TREMOTESF_FILEUTILS_H

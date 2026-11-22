@@ -4,12 +4,13 @@
 
 #include <algorithm>
 #include <array>
-#include <map>
+#include <climits>
 #include <ranges>
 #include <stdexcept>
+#include <utility>
 
-#include <QJsonArray>
-#include <QJsonObject>
+#include <QDateTime>
+#include <QVariantList>
 
 #include <fmt/ranges.h>
 
@@ -17,9 +18,9 @@
 #include "serversettings.h"
 #include "torrent.h"
 
-#include "log/log.h"
-#include "jsonutils.h"
 #include "itemlistupdater.h"
+#include "jsonutils.h"
+#include "log/log.h"
 #include "pathutils.h"
 #include "stdutils.h"
 
@@ -29,51 +30,38 @@ namespace tremotesf {
     using namespace impl;
 
     enum class TorrentData::UpdateKey {
-        Id,
         HashString,
-        AddedDate,
         Name,
-        MagnetLink,
-        QueuePosition,
+        AddedDate,
+        ActivityDate,
         TotalSize,
         CompletedSize,
         LeftUntilDone,
-        SizeWhenDone,
-        PercentDone,
-        RecheckProgress,
-        Eta,
-        MetadataPercentComplete,
         DownloadSpeed,
         UploadSpeed,
-        DownloadSpeedLimited,
-        DownloadSpeedLimit,
-        UploadSpeedLimited,
-        UploadSpeedLimit,
         TotalDownloaded,
         TotalUploaded,
         Ratio,
-        RatioLimitMode,
-        RatioLimit,
-        PeersSendingToUsCount,
-        PeersGettingFromUsCount,
-        WebSeeders,
-        WebSeedersSendingToUsCount,
-        Status,
-        Error,
-        ErrorString,
-        ActivityDate,
-        DoneDate,
-        PeersLimit,
-        HonorSessionLimits,
-        BandwidthPriority,
-        IdleSeedingLimitMode,
-        IdleSeedingLimit,
+        IsMultiFile,
         DownloadDirectory,
-        Creator,
-        CreationDate,
-        Comment,
-        TrackerStats,
+        BasePath,
         Labels,
+        ErrorString,
+        PeersLimit,
+        BandwidthPriority,
+        State,
+        Hashing,
+        HashChecking,
+        Complete,
+        HashingFailed,
+        IsMeta,
+        PeersConnected,
+        DoneDate,
+        CreationDate,
+        ChunkSize,
+        ChunksHashed,
+        ChunksTotal,
+        TrackerStats,
 
         Count
     };
@@ -83,647 +71,353 @@ namespace tremotesf {
             std::views::iota(0, static_cast<int>(TorrentData::UpdateKey::Count))
             | std::views::transform([](int key) { return static_cast<TorrentData::UpdateKey>(key); });
 
-        constexpr QLatin1String updateKeyString(TorrentData::UpdateKey key) {
+        QString updateKeyCommand(TorrentData::UpdateKey key) {
             switch (key) {
-            case TorrentData::UpdateKey::Id:
-                return "id"_L1;
             case TorrentData::UpdateKey::HashString:
-                return "hashString"_L1;
-            case TorrentData::UpdateKey::AddedDate:
-                return "addedDate"_L1;
+                return "d.hash="_L1;
             case TorrentData::UpdateKey::Name:
-                return "name"_L1;
-            case TorrentData::UpdateKey::MagnetLink:
-                return "magnetLink"_L1;
-            case TorrentData::UpdateKey::QueuePosition:
-                return "queuePosition"_L1;
-            case TorrentData::UpdateKey::TotalSize:
-                return "totalSize"_L1;
-            case TorrentData::UpdateKey::CompletedSize:
-                return "haveValid"_L1;
-            case TorrentData::UpdateKey::LeftUntilDone:
-                return "leftUntilDone"_L1;
-            case TorrentData::UpdateKey::SizeWhenDone:
-                return "sizeWhenDone"_L1;
-            case TorrentData::UpdateKey::PercentDone:
-                return "percentDone"_L1;
-            case TorrentData::UpdateKey::RecheckProgress:
-                return "recheckProgress"_L1;
-            case TorrentData::UpdateKey::Eta:
-                return "eta"_L1;
-            case TorrentData::UpdateKey::MetadataPercentComplete:
-                return "metadataPercentComplete"_L1;
-            case TorrentData::UpdateKey::DownloadSpeed:
-                return "rateDownload"_L1;
-            case TorrentData::UpdateKey::UploadSpeed:
-                return "rateUpload"_L1;
-            case TorrentData::UpdateKey::DownloadSpeedLimited:
-                return "downloadLimited"_L1;
-            case TorrentData::UpdateKey::DownloadSpeedLimit:
-                return "downloadLimit"_L1;
-            case TorrentData::UpdateKey::UploadSpeedLimited:
-                return "uploadLimited"_L1;
-            case TorrentData::UpdateKey::UploadSpeedLimit:
-                return "uploadLimit"_L1;
-            case TorrentData::UpdateKey::TotalDownloaded:
-                return "downloadedEver"_L1;
-            case TorrentData::UpdateKey::TotalUploaded:
-                return "uploadedEver"_L1;
-            case TorrentData::UpdateKey::Ratio:
-                return "uploadRatio"_L1;
-            case TorrentData::UpdateKey::RatioLimitMode:
-                return "seedRatioMode"_L1;
-            case TorrentData::UpdateKey::RatioLimit:
-                return "seedRatioLimit"_L1;
-            case TorrentData::UpdateKey::PeersSendingToUsCount:
-                return "peersSendingToUs"_L1;
-            case TorrentData::UpdateKey::PeersGettingFromUsCount:
-                return "peersGettingFromUs"_L1;
-            case TorrentData::UpdateKey::WebSeeders:
-                return "webseeds"_L1;
-            case TorrentData::UpdateKey::WebSeedersSendingToUsCount:
-                return "webseedsSendingToUs"_L1;
-            case TorrentData::UpdateKey::Status:
-                return "status"_L1;
-            case TorrentData::UpdateKey::Error:
-                return "error"_L1;
-            case TorrentData::UpdateKey::ErrorString:
-                return "errorString"_L1;
+                return "d.name="_L1;
+            case TorrentData::UpdateKey::AddedDate:
+                return "d.load_date="_L1;
             case TorrentData::UpdateKey::ActivityDate:
-                return "activityDate"_L1;
-            case TorrentData::UpdateKey::DoneDate:
-                return "doneDate"_L1;
-            case TorrentData::UpdateKey::PeersLimit:
-                return "peer-limit"_L1;
-            case TorrentData::UpdateKey::HonorSessionLimits:
-                return "honorsSessionLimits"_L1;
-            case TorrentData::UpdateKey::BandwidthPriority:
-                return "bandwidthPriority"_L1;
-            case TorrentData::UpdateKey::IdleSeedingLimitMode:
-                return "seedIdleMode"_L1;
-            case TorrentData::UpdateKey::IdleSeedingLimit:
-                return "seedIdleLimit"_L1;
+                return "d.timestamp.started="_L1;
+            case TorrentData::UpdateKey::TotalSize:
+                return "d.size_bytes="_L1;
+            case TorrentData::UpdateKey::CompletedSize:
+                return "d.completed_bytes="_L1;
+            case TorrentData::UpdateKey::LeftUntilDone:
+                return "d.left_bytes="_L1;
+            case TorrentData::UpdateKey::DownloadSpeed:
+                return "d.down.rate="_L1;
+            case TorrentData::UpdateKey::UploadSpeed:
+                return "d.up.rate="_L1;
+            case TorrentData::UpdateKey::TotalDownloaded:
+                return "d.down.total="_L1;
+            case TorrentData::UpdateKey::TotalUploaded:
+                return "d.up.total="_L1;
+            case TorrentData::UpdateKey::Ratio:
+                return "d.ratio="_L1;
+            case TorrentData::UpdateKey::IsMultiFile:
+                return "d.is_multi_file="_L1;
             case TorrentData::UpdateKey::DownloadDirectory:
-                return "downloadDir"_L1;
-            case TorrentData::UpdateKey::Creator:
-                return "creator"_L1;
-            case TorrentData::UpdateKey::CreationDate:
-                return "dateCreated"_L1;
-            case TorrentData::UpdateKey::Comment:
-                return "comment"_L1;
-            case TorrentData::UpdateKey::TrackerStats:
-                return "trackerStats"_L1;
+                return "d.directory="_L1;
+            case TorrentData::UpdateKey::BasePath:
+                return "d.base_path="_L1;
             case TorrentData::UpdateKey::Labels:
-                return "labels"_L1;
+                return "d.custom1="_L1;
+            case TorrentData::UpdateKey::ErrorString:
+                return "d.message="_L1;
+            case TorrentData::UpdateKey::PeersLimit:
+                return "d.peers_max="_L1;
+            case TorrentData::UpdateKey::BandwidthPriority:
+                return "d.priority="_L1;
+            case TorrentData::UpdateKey::State:
+                return "d.state="_L1;
+            case TorrentData::UpdateKey::Hashing:
+                return "d.hashing="_L1;
+            case TorrentData::UpdateKey::HashChecking:
+                return "d.is_hash_checking="_L1;
+            case TorrentData::UpdateKey::Complete:
+                return "d.complete="_L1;
+            case TorrentData::UpdateKey::HashingFailed:
+                return "d.hashing_failed="_L1;
+            case TorrentData::UpdateKey::IsMeta:
+                return "d.is_meta="_L1;
+            case TorrentData::UpdateKey::PeersConnected:
+                return "d.peers_connected="_L1;
+            case TorrentData::UpdateKey::DoneDate:
+                return "d.timestamp.finished="_L1;
+            case TorrentData::UpdateKey::CreationDate:
+                return "d.creation_date="_L1;
+            case TorrentData::UpdateKey::ChunkSize:
+                return "d.chunk_size="_L1;
+            case TorrentData::UpdateKey::ChunksHashed:
+                return "d.chunks_hashed="_L1;
+            case TorrentData::UpdateKey::ChunksTotal:
+                return "d.size_chunks="_L1;
+            case TorrentData::UpdateKey::TrackerStats:
+                return "t.multicall=,t.url=,t.group=,t.is_enabled=,t.is_usable=,t.is_busy=,t.scrape_complete=,t.scrape_incomplete=,t.latest_sum_peers=,t.success_time_next=,t.success_counter=,t.failed_counter="_L1;
             case TorrentData::UpdateKey::Count:
                 return {};
             }
             return {};
         }
 
-        std::optional<TorrentData::UpdateKey> mapUpdateKey(const QString& stringKey) {
-            static const auto mapping = [] {
-                std::map<QLatin1String, TorrentData::UpdateKey, std::less<>> map{};
-                for (auto key : allUpdateKeys) {
-                    map.emplace(updateKeyString(key), key);
-                }
-                return map;
-            }();
-            const auto foundKey = mapping.find(stringKey);
-            if (foundKey == mapping.end()) {
-                warning().log("Unknown torrent field '{}'", stringKey);
-                return {};
-            }
-            return static_cast<TorrentData::UpdateKey>(foundKey->second);
-        }
-
-        constexpr auto wantedFilesKey = "files-wanted"_L1;
-        constexpr auto unwantedFilesKey = "files-unwanted"_L1;
-
-        constexpr auto lowPriorityKey = "priority-low"_L1;
-        constexpr auto normalPriorityKey = "priority-normal"_L1;
-        constexpr auto highPriorityKey = "priority-high"_L1;
-
-        constexpr auto addTrackerKey = "trackerAdd"_L1;
-        constexpr auto replaceTrackerKey = "trackerReplace"_L1;
-        constexpr auto removeTrackerKey = "trackerRemove"_L1;
-        constexpr auto trackerListKey = "trackerList"_L1;
-
-        constexpr auto statusMapper = EnumMapper(
-            std::array{
-                EnumMapping(TorrentData::Status::Paused, 0),
-                EnumMapping(TorrentData::Status::QueuedForChecking, 1),
-                EnumMapping(TorrentData::Status::Checking, 2),
-                EnumMapping(TorrentData::Status::QueuedForDownloading, 3),
-                EnumMapping(TorrentData::Status::Downloading, 4),
-                EnumMapping(TorrentData::Status::QueuedForSeeding, 5),
-                EnumMapping(TorrentData::Status::Seeding, 6)
-            }
-        );
-
-        constexpr auto errorMapper = EnumMapper(
-            std::array{
-                EnumMapping(TorrentData::Error::None, 0),
-                EnumMapping(TorrentData::Error::TrackerWarning, 1),
-                EnumMapping(TorrentData::Error::TrackerError, 2),
-                EnumMapping(TorrentData::Error::LocalError, 3)
-            }
-        );
-
         constexpr auto priorityMapper = EnumMapper(
             std::array{
-                EnumMapping(TorrentData::Priority::Low, -1),
-                EnumMapping(TorrentData::Priority::Normal, 0),
-                EnumMapping(TorrentData::Priority::High, 1)
+                EnumMapping(TorrentData::Priority::Low, 1),
+                EnumMapping(TorrentData::Priority::Normal, 2),
+                EnumMapping(TorrentData::Priority::High, 3)
             }
         );
 
-        constexpr auto ratioLimitModeMapper = EnumMapper(
-            std::array{
-                EnumMapping(TorrentData::RatioLimitMode::Global, 0),
-                EnumMapping(TorrentData::RatioLimitMode::Single, 1),
-                EnumMapping(TorrentData::RatioLimitMode::Unlimited, 2)
-            }
-        );
-
-        constexpr auto idleSeedingLimitModeMapper = EnumMapper(
-            std::array{
-                EnumMapping(TorrentData::IdleSeedingLimitMode::Global, 0),
-                EnumMapping(TorrentData::IdleSeedingLimitMode::Single, 1),
-                EnumMapping(TorrentData::IdleSeedingLimitMode::Unlimited, 2)
-            }
-        );
+        void updateDateTimeFromSeconds(QDateTime& dateTime, const QVariant& value, bool& changed) {
+            const auto seconds = value.toLongLong();
+            const QDateTime newDateTime = seconds > 0 ? QDateTime::fromSecsSinceEpoch(seconds, QTimeZone::utc())
+                                                      : QDateTime{{}, {}, QTimeZone::utc()};
+            setChanged(dateTime, newDateTime, changed);
+        }
     }
 
     int TorrentData::priorityToInt(Priority value) { return priorityMapper.toJsonConstant(value); }
 
-    bool TorrentData::update(const QJsonObject& object, bool firstTime, const Rpc* rpc) {
+    bool TorrentData::update(const QVariantList& values, bool firstTime, const Rpc* rpc) {
         bool changed = false;
-        for (auto i = object.begin(), end = object.end(); i != end; ++i) {
-            const auto key = mapUpdateKey(i.key());
-            if (key.has_value()) {
-                updateProperty(*key, i.value(), changed, firstTime, rpc);
-            }
+        if (static_cast<qsizetype>(values.size()) < static_cast<qsizetype>(UpdateKey::Count)) {
+            warning().log(
+                "Torrent update has fewer values than expected: {} vs {}",
+                values.size(),
+                std::to_underlying(UpdateKey::Count)
+            );
         }
-        applyTrackerErrorWorkaround(changed);
-        return changed;
-    }
-
-    bool TorrentData::update(
-        std::span<const std::optional<TorrentData::UpdateKey>> keys,
-        const QJsonArray& values,
-        bool firstTime,
-        const Rpc* rpc
-    ) {
-        bool changed = false;
-        for (const auto& [key, value] : std::views::zip(keys, values)) {
-            if (key.has_value()) {
-                updateProperty(*key, value, changed, firstTime, rpc);
+        qsizetype index = 0;
+        for (auto key : allUpdateKeys) {
+            if (index >= values.size()) {
+                break;
             }
+            updateProperty(key, values.at(index), changed, firstTime, rpc);
+            ++index;
         }
-        applyTrackerErrorWorkaround(changed);
+        recomputeDerived(changed);
         return changed;
     }
 
     void TorrentData::updateProperty(
-        TorrentData::UpdateKey intKey, const QJsonValue& value, bool& changed, bool firstTime, const Rpc* rpc
+        TorrentData::UpdateKey key, const QVariant& value, bool& changed, bool firstTime, const Rpc* rpc
     ) {
-        const auto key = static_cast<UpdateKey>(intKey);
-        switch (static_cast<UpdateKey>(key)) {
-        case TorrentData::UpdateKey::Id:
-            return;
+        switch (key) {
         case TorrentData::UpdateKey::HashString:
             if (firstTime) {
-                hashString = value.toString();
+                hashString = value.toString().toLower();
             }
-            return;
-        case TorrentData::UpdateKey::AddedDate:
-            updateDateTime(addedDate, value, changed);
             return;
         case TorrentData::UpdateKey::Name:
             setChanged(name, value.toString(), changed);
             return;
-        case TorrentData::UpdateKey::MagnetLink:
-            setChanged(magnetLink, value.toString(), changed);
-            return;
-        case TorrentData::UpdateKey::QueuePosition:
-            setChanged(queuePosition, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::TotalSize:
-            setChanged(totalSize, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::CompletedSize:
-            setChanged(completedSize, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::LeftUntilDone:
-            setChanged(leftUntilDone, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::SizeWhenDone:
-            setChanged(sizeWhenDone, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::PercentDone:
-            setChanged(percentDone, value.toDouble(), changed);
-            return;
-        case TorrentData::UpdateKey::RecheckProgress:
-            setChanged(recheckProgress, value.toDouble(), changed);
-            return;
-        case TorrentData::UpdateKey::Eta:
-            setChanged(eta, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::MetadataPercentComplete:
-            setChanged(metadataComplete, value.toInt() == 1, changed);
-            return;
-        case TorrentData::UpdateKey::DownloadSpeed:
-            setChanged(downloadSpeed, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::UploadSpeed:
-            setChanged(uploadSpeed, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::DownloadSpeedLimited:
-            setChanged(downloadSpeedLimited, value.toBool(), changed);
-            return;
-        case TorrentData::UpdateKey::DownloadSpeedLimit:
-            setChanged(downloadSpeedLimit, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::UploadSpeedLimited:
-            setChanged(uploadSpeedLimited, value.toBool(), changed);
-            return;
-        case TorrentData::UpdateKey::UploadSpeedLimit:
-            setChanged(uploadSpeedLimit, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::TotalDownloaded:
-            setChanged(totalDownloaded, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::TotalUploaded:
-            setChanged(totalUploaded, value.toInteger(), changed);
-            return;
-        case TorrentData::UpdateKey::Ratio:
-            setChanged(ratio, value.toDouble(), changed);
-            return;
-        case TorrentData::UpdateKey::RatioLimitMode:
-            setChanged(ratioLimitMode, ratioLimitModeMapper.fromJsonValue(value, updateKeyString(key)), changed);
-            return;
-        case TorrentData::UpdateKey::RatioLimit:
-            setChanged(ratioLimit, value.toDouble(), changed);
-            return;
-        case TorrentData::UpdateKey::PeersSendingToUsCount:
-            setChanged(peersSendingToUsCount, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::PeersGettingFromUsCount:
-            setChanged(peersGettingFromUsCount, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::WebSeeders: {
-            setChanged(
-                webSeeders,
-                value.toArray() | std::views::transform([](auto value) {
-                    return value.toString();
-                }) | std::ranges::to<std::vector>(),
-                changed
-            );
-            return;
-        }
-        case TorrentData::UpdateKey::WebSeedersSendingToUsCount:
-            setChanged(webSeedersSendingToUsCount, value.toInt(), changed);
-            return;
-        case TorrentData::UpdateKey::Status:
-            setChanged(status, statusMapper.fromJsonValue(value, updateKeyString(key)), changed);
-            return;
-        case TorrentData::UpdateKey::Error:
-            setChanged(error, errorMapper.fromJsonValue(value, updateKeyString(key)), changed);
-            return;
-        case TorrentData::UpdateKey::ErrorString:
-            setChanged(errorString, value.toString(), changed);
+        case TorrentData::UpdateKey::AddedDate:
+            updateDateTimeFromSeconds(addedDate, value, changed);
             return;
         case TorrentData::UpdateKey::ActivityDate:
-            updateDateTime(activityDate, value, changed);
+            updateDateTimeFromSeconds(activityDate, value, changed);
             return;
-        case TorrentData::UpdateKey::DoneDate:
-            updateDateTime(doneDate, value, changed);
+        case TorrentData::UpdateKey::TotalSize:
+            setChanged(totalSize, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::CompletedSize:
+            setChanged(completedSize, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::LeftUntilDone:
+            setChanged(leftUntilDone, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::DownloadSpeed:
+            setChanged(downloadSpeed, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::UploadSpeed:
+            setChanged(uploadSpeed, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::TotalDownloaded:
+            setChanged(totalDownloaded, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::TotalUploaded:
+            setChanged(totalUploaded, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::Ratio:
+            setChanged(ratio, value.toLongLong() / 1000.0, changed);
+            return;
+        case TorrentData::UpdateKey::IsMultiFile:
+            setChanged(isMultiFile, value.toBool() || value.toInt() != 0, changed);
+            return;
+        case TorrentData::UpdateKey::DownloadDirectory:
+            setChanged(rootDirectory, normalizePath(value.toString(), rpc->serverSettings()->data().pathOs), changed);
+            return;
+        case TorrentData::UpdateKey::BasePath:
+            setChanged(basePath, normalizePath(value.toString(), rpc->serverSettings()->data().pathOs), changed);
+            return;
+        case TorrentData::UpdateKey::Labels: {
+            const auto label = value.toString();
+            std::vector<QString> labels{};
+            if (!label.isEmpty()) {
+                labels.push_back(label);
+            }
+            setChanged(this->labels, std::move(labels), changed);
+            return;
+        }
+        case TorrentData::UpdateKey::ErrorString:
+            setChanged(errorString, value.toString(), changed);
             return;
         case TorrentData::UpdateKey::PeersLimit:
             setChanged(peersLimit, value.toInt(), changed);
             return;
-        case TorrentData::UpdateKey::HonorSessionLimits:
-            setChanged(honorSessionLimits, value.toBool(), changed);
+        case TorrentData::UpdateKey::BandwidthPriority: {
+            Priority priority{};
+            switch (value.toInt()) {
+            case 1:
+                priority = Priority::Low;
+                break;
+            case 3:
+                priority = Priority::High;
+                break;
+            default:
+                priority = Priority::Normal;
+                break;
+            }
+            setChanged(bandwidthPriority, priority, changed);
             return;
-        case TorrentData::UpdateKey::BandwidthPriority:
-            setChanged(bandwidthPriority, priorityMapper.fromJsonValue(value, updateKeyString(key)), changed);
+        }
+        case TorrentData::UpdateKey::State:
+            setChanged(state, value.toInt(), changed);
             return;
-        case TorrentData::UpdateKey::IdleSeedingLimitMode:
-            setChanged(
-                idleSeedingLimitMode,
-                idleSeedingLimitModeMapper.fromJsonValue(value, updateKeyString(key)),
-                changed
-            );
+        case TorrentData::UpdateKey::Hashing:
+            setChanged(hashing, value.toBool() || value.toInt() != 0, changed);
             return;
-        case TorrentData::UpdateKey::IdleSeedingLimit:
-            setChanged(idleSeedingLimit, value.toInt(), changed);
+        case TorrentData::UpdateKey::HashChecking:
+            setChanged(hashChecking, value.toBool() || value.toInt() != 0, changed);
             return;
-        case TorrentData::UpdateKey::DownloadDirectory:
-            setChanged(
-                downloadDirectory,
-                normalizePath(value.toString(), rpc->serverSettings()->data().pathOs),
-                changed
-            );
+        case TorrentData::UpdateKey::Complete:
+            setChanged(complete, value.toBool() || value.toInt() != 0, changed);
             return;
-        case TorrentData::UpdateKey::Creator:
-            setChanged(creator, value.toString(), changed);
+        case TorrentData::UpdateKey::HashingFailed:
+            setChanged(hashingFailed, value.toBool() || value.toInt() != 0, changed);
+            return;
+        case TorrentData::UpdateKey::IsMeta:
+            setChanged(isMeta, value.toBool() || value.toInt() != 0, changed);
+            return;
+        case TorrentData::UpdateKey::PeersConnected: {
+            const auto peers = value.toInt();
+            setChanged(peersSendingToUsCount, peers, changed);
+            setChanged(peersGettingFromUsCount, peers, changed);
+            return;
+        }
+        case TorrentData::UpdateKey::DoneDate:
+            updateDateTimeFromSeconds(doneDate, value, changed);
             return;
         case TorrentData::UpdateKey::CreationDate:
-            updateDateTime(creationDate, value, changed);
+            updateDateTimeFromSeconds(creationDate, value, changed);
             return;
-        case TorrentData::UpdateKey::Comment:
-            setChanged(comment, value.toString(), changed);
+        case TorrentData::UpdateKey::ChunkSize:
+            setChanged(chunkSize, value.toLongLong(), changed);
+            return;
+        case TorrentData::UpdateKey::ChunksHashed:
+            setChanged(chunksHashed, value.toInt(), changed);
+            return;
+        case TorrentData::UpdateKey::ChunksTotal:
+            setChanged(chunksTotal, value.toInt(), changed);
             return;
         case TorrentData::UpdateKey::TrackerStats: {
             std::vector<Tracker> newTrackers{};
-            const QJsonArray trackerJsons = value.toArray();
-            newTrackers.reserve(static_cast<size_t>(trackerJsons.size()));
-            int newTotalSeeders{};
-            int newTotalLeechers{};
-            for (const auto& i : trackerJsons) {
-                const QJsonObject trackerMap = i.toObject();
-                const int trackerId = trackerMap.value("id"_L1).toInt();
-                const auto found = std::ranges::find(trackers, trackerId, &Tracker::id);
-                if (found == trackers.end()) {
-                    newTrackers.emplace_back(trackerId, trackerMap);
-                    changed = true;
-                } else {
-                    if (found->update(trackerMap)) {
-                        changed = true;
-                    }
-                    newTrackers.push_back(std::move(*found));
+            int seeders{};
+            int leechers{};
+            const auto rows = value.toList();
+            newTrackers.reserve(static_cast<size_t>(rows.size()));
+            int trackerId = 0;
+            for (const auto& row : rows) {
+                if (row.typeId() != QMetaType::QVariantList) {
+                    continue;
                 }
-                newTotalSeeders += newTrackers.back().seeders();
-                newTotalLeechers += newTrackers.back().leechers();
+                newTrackers.emplace_back(trackerId, row.toList());
+                seeders += newTrackers.back().seeders();
+                leechers += newTrackers.back().leechers();
+                ++trackerId;
             }
-            trackers = std::move(newTrackers);
-            setChanged(totalSeedersFromTrackersCount, newTotalSeeders, changed);
-            setChanged(totalLeechersFromTrackersCount, newTotalLeechers, changed);
-            return;
-        }
-        case TorrentData::UpdateKey::Labels: {
-            setChanged(
-                labels,
-                value.toArray() | std::views::transform([](auto value) {
-                    return value.toString();
-                }) | std::ranges::to<std::vector>(),
-                changed
-            );
+            setChanged(trackers, std::move(newTrackers), changed);
+            setChanged(totalSeedersFromTrackersCount, seeders, changed);
+            setChanged(totalLeechersFromTrackersCount, leechers, changed);
             return;
         }
         case TorrentData::UpdateKey::Count:
             throw std::logic_error("UpdateKey::Count should not be mapped");
         }
-        throw std::logic_error(fmt::format("Can't update key {}", static_cast<int>(intKey)));
     }
 
-    void TorrentData::applyTrackerErrorWorkaround(bool& changed) {
-        // Sometimes Transmission doesn't propagate tracker error to the torrent's status
-        if (error != Error::None) {
-            return;
+    void TorrentData::recomputeDerived(bool& changed) {
+        QString newDownloadDirectory = rootDirectory;
+        if (isMultiFile && !newDownloadDirectory.isEmpty()) {
+            const auto separatorIndex = newDownloadDirectory.lastIndexOf('/');
+            if (separatorIndex > 0) {
+                newDownloadDirectory = newDownloadDirectory.left(separatorIndex);
+            } else if (separatorIndex == 0) {
+                newDownloadDirectory = "/"_L1;
+            }
         }
-        if (trackers.empty()) {
-            return;
+        setChanged(downloadDirectory, newDownloadDirectory, changed);
+        setChanged(sizeWhenDone, totalSize, changed);
+        setChanged(
+            completedSize,
+            std::clamp<qint64>(completedSize, 0, totalSize > 0 ? totalSize : completedSize),
+            changed
+        );
+        setChanged(percentDone, totalSize > 0 ? static_cast<double>(completedSize) / totalSize : 0.0, changed);
+        setChanged(metadataComplete, !isMeta, changed);
+        setChanged(magnetLink, "magnet:?xt=urn:btih:"_L1 + hashString, changed);
+
+        Status newStatus{};
+        if (hashing || hashChecking) {
+            newStatus = Status::Checking;
+        } else if (state == 0) {
+            newStatus = Status::Paused;
+        } else if (complete) {
+            newStatus = Status::Seeding;
+        } else {
+            newStatus = Status::Downloading;
         }
-        // Only set error if *all* trackers have an error
-        if (std::ranges::any_of(trackers, [](const Tracker& tracker) { return tracker.errorMessage().isEmpty(); })) {
-            return;
+        setChanged(status, newStatus, changed);
+
+        Error newError{};
+        if (hashingFailed) {
+            newError = Error::LocalError;
+        } else if (!errorString.isEmpty()) {
+            newError = Error::TrackerError;
         }
-        // Set error from first tracker
-        error = Error::TrackerError;
-        errorString = trackers.front().errorMessage();
-        changed = true;
+        setChanged(error, newError, changed);
+
+        int newEta{};
+        if (leftUntilDone == 0) {
+            newEta = 0;
+        } else if (downloadSpeed > 0) {
+            newEta = static_cast<int>(std::min<qint64>(leftUntilDone / downloadSpeed, INT_MAX));
+        } else {
+            newEta = -1;
+        }
+        setChanged(eta, newEta, changed);
+
+        const double newRecheckProgress =
+            (chunksTotal > 0 && (hashing || hashChecking)) ? static_cast<double>(chunksHashed) / chunksTotal : 1.0;
+        setChanged(recheckProgress, newRecheckProgress, changed);
     }
 
-    Torrent::Torrent(int id, const QJsonObject& object, Rpc* rpc, QObject* parent) : QObject(parent), mRpc(rpc) {
-        mData.id = id;
-        [[maybe_unused]] const bool changed = mData.update(object, true, rpc);
-    }
-
-    Torrent::Torrent(
-        int id,
-        std::span<const std::optional<TorrentData::UpdateKey>> keys,
-        const QJsonArray& values,
-        Rpc* rpc,
-        QObject* parent
-    )
+    Torrent::Torrent(int id, const QString& hash, const QVariantList& values, Rpc* rpc, QObject* parent)
         : QObject(parent), mRpc(rpc) {
         mData.id = id;
-        [[maybe_unused]] const bool changed = mData.update(keys, values, true, rpc);
+        mData.hashString = hash;
+        [[maybe_unused]] const bool changed = mData.update(values, true, rpc);
     }
 
-    QJsonArray Torrent::updateFields(const ServerSettings* serverSettings) {
-        QJsonArray fields{};
+    QStringList Torrent::updateFields() {
+        QStringList fields{};
         for (auto key : allUpdateKeys) {
-            if (key == TorrentData::UpdateKey::Labels && !serverSettings->data().hasLabelsProperty()) {
-                continue;
-            }
-            fields.push_back(updateKeyString(key));
+            fields.push_back(updateKeyCommand(key));
         }
         return fields;
     }
 
-    std::optional<int> Torrent::idFromJson(const QJsonObject& object) {
-        const auto value = object.value(updateKeyString(TorrentData::UpdateKey::Id));
-        if (value.isDouble()) {
-            return value.toInt();
-        }
-        return {};
-    }
-
-    std::optional<QJsonArray::size_type>
-    Torrent::idKeyIndex(std::span<const std::optional<TorrentData::UpdateKey>> keys) {
-        return indexOfCasted<QJsonArray::size_type>(keys, TorrentData::UpdateKey::Id);
-    }
-
-    std::vector<std::optional<TorrentData::UpdateKey>> Torrent::mapUpdateKeys(const QJsonArray& stringKeys) {
-        return stringKeys
-               | std::views::transform([](auto value) { return mapUpdateKey(value.toString()); })
-               | std::ranges::to<std::vector>();
-    }
-
-    void Torrent::setDownloadSpeedLimited(bool limited) {
-        mData.downloadSpeedLimited = limited;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::DownloadSpeedLimited), limited);
-    }
-
-    void Torrent::setDownloadSpeedLimit(int limit) {
-        mData.downloadSpeedLimit = limit;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::DownloadSpeedLimit), limit);
-    }
-
-    void Torrent::setUploadSpeedLimited(bool limited) {
-        mData.uploadSpeedLimited = limited;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::UploadSpeedLimited), limited);
-    }
-
-    void Torrent::setUploadSpeedLimit(int limit) {
-        mData.uploadSpeedLimit = limit;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::UploadSpeedLimit), limit);
-    }
-
-    void Torrent::setRatioLimitMode(TorrentData::RatioLimitMode mode) {
-        mData.ratioLimitMode = mode;
-        mRpc->setTorrentProperty(
-            mData.id,
-            updateKeyString(TorrentData::UpdateKey::RatioLimitMode),
-            ratioLimitModeMapper.toJsonConstant(mode)
-        );
-    }
-
-    void Torrent::setRatioLimit(double limit) {
-        mData.ratioLimit = limit;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::RatioLimit), limit);
-    }
-
     void Torrent::setPeersLimit(int limit) {
         mData.peersLimit = limit;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::PeersLimit), limit);
-    }
-
-    void Torrent::setHonorSessionLimits(bool honor) {
-        mData.honorSessionLimits = honor;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::HonorSessionLimits), honor);
+        mRpc->setTorrentPeersLimit(mData.id, limit);
     }
 
     void Torrent::setBandwidthPriority(TorrentData::Priority priority) {
         mData.bandwidthPriority = priority;
-        mRpc->setTorrentProperty(
-            mData.id,
-            updateKeyString(TorrentData::UpdateKey::BandwidthPriority),
-            priorityMapper.toJsonConstant(priority)
-        );
-    }
-
-    void Torrent::setIdleSeedingLimitMode(TorrentData::IdleSeedingLimitMode mode) {
-        mData.idleSeedingLimitMode = mode;
-        mRpc->setTorrentProperty(
-            mData.id,
-            updateKeyString(TorrentData::UpdateKey::IdleSeedingLimitMode),
-            idleSeedingLimitModeMapper.toJsonConstant(mode)
-        );
-    }
-
-    void Torrent::setIdleSeedingLimit(int limit) {
-        mData.idleSeedingLimit = limit;
-        mRpc->setTorrentProperty(mData.id, updateKeyString(TorrentData::UpdateKey::IdleSeedingLimit), limit);
-    }
-
-    namespace {
-        std::vector<std::set<QString>> toTieredAnnounceUrls(std::span<const Tracker> trackers) {
-            std::map<int, std::set<QString>> tiered{};
-            for (const auto& tracker : trackers) {
-                tiered[tracker.id()].insert(tracker.announce());
-            }
-            return std::views::values(tiered) | std::views::as_rvalue | std::ranges::to<std::vector>();
-        }
-
-        QString toTrackerList(std::span<const std::set<QString>> tieredAnnounceUrls) {
-            QString trackerList{};
-            bool processedFirstTier{};
-            for (const auto& tier : tieredAnnounceUrls) {
-                if (processedFirstTier) {
-                    trackerList += "\n\n"_L1;
-                }
-                for (const auto& announceUrl : tier) {
-                    trackerList += announceUrl;
-                    trackerList += '\n';
-                }
-                processedFirstTier = true;
-            }
-            return trackerList;
-        }
-
-        bool isIntersect(const std::set<QString>& existingTier, const std::set<QString>& newTier) {
-            return std::ranges::any_of(newTier, [&](const auto& announceUrl) {
-                return existingTier.contains(announceUrl);
-            });
-        }
-
-        QJsonArray filterOutExistingTrackers(
-            std::span<const std::set<QString>> newTrackers, std::span<const Tracker> existingTrackers
-        ) {
-            QJsonArray trackersToAdd{};
-            for (const auto& tier : newTrackers) {
-                if (tier.empty()) continue;
-                // Transmission adds each announce URL to each own tier when using trackerAdd property, so take first URL from each tier
-                const auto& first = *tier.begin();
-                if (!std::ranges::contains(existingTrackers, first, &Tracker::announce)) {
-                    trackersToAdd.push_back(first);
-                }
-            }
-            return trackersToAdd;
-        }
-    }
-
-    namespace impl {
-        std::vector<std::set<QString>> mergeTrackers(
-            const std::vector<std::set<QString>>& existingTrackers, std::span<const std::set<QString>> newTrackers
-        ) {
-            auto merged = existingTrackers;
-            for (const auto& newTier : newTrackers) {
-                if (newTier.empty()) continue;
-                const auto existingTier =
-                    std::ranges::find_if(merged, [&](auto& tier) { return isIntersect(tier, newTier); });
-                if (existingTier != merged.end()) {
-                    existingTier->insert(newTier.begin(), newTier.end());
-                } else {
-                    merged.push_back(newTier);
-                }
-            }
-            return merged;
-        }
+        mRpc->setTorrentPriority(mData.id, priority);
     }
 
     void Torrent::addTrackers(std::span<const std::set<QString>> announceUrls) {
-        if (mRpc->serverSettings()->data().hasTrackerListProperty()) {
-            const auto existingTrackers = toTieredAnnounceUrls(mData.trackers);
-            debug().log("Merging exisiting trackers {} with {}", existingTrackers, announceUrls);
-            const auto merged = mergeTrackers(existingTrackers, announceUrls);
-            const bool changed = merged != existingTrackers;
-            debug().log("Result is {}, changed: {}", merged, changed);
-            if (changed) {
-                mRpc->setTorrentProperty(mData.id, trackerListKey, toTrackerList(merged), true);
+        int group = 0;
+        for (const auto& tier : announceUrls) {
+            for (const auto& announce : tier) {
+                mRpc->addTorrentTracker(mData.id, announce, std::min(group, 32));
             }
-        } else {
-            auto trackersToAdd = filterOutExistingTrackers(announceUrls, mData.trackers);
-            if (!trackersToAdd.empty()) {
-                mRpc->setTorrentProperty(mData.id, addTrackerKey, std::move(trackersToAdd), true);
-            }
+            ++group;
         }
-    }
-
-    void Torrent::setTracker(int trackerId, const QString& announce) {
-        if (!mRpc->serverSettings()->data().hasTrackerListProperty()) {
-            mRpc->setTorrentProperty(mData.id, replaceTrackerKey, QJsonArray{trackerId, announce}, true);
-            return;
-        }
-        auto trackers = mData.trackers;
-        const auto tracker = std::ranges::find(trackers, trackerId, &Tracker::id);
-        if (tracker == trackers.end()) {
-            warning().log("setTracker: did not find tracker with id {}", trackerId);
-            return;
-        }
-        if (tracker->announce() == announce) {
-            return;
-        }
-        tracker->replaceAnnounceUrl(announce);
-        mRpc->setTorrentProperty(mData.id, trackerListKey, toTrackerList(toTieredAnnounceUrls(trackers)), true);
-    }
-
-    void Torrent::removeTrackers(std::span<const int> ids) {
-        if (!mRpc->serverSettings()->data().hasTrackerListProperty()) {
-            mRpc->setTorrentProperty(mData.id, removeTrackerKey, toJsonArray(ids), true);
-            return;
-        }
-        auto trackers = mData.trackers;
-        const auto erased =
-            std::erase_if(trackers, [ids](const auto& tracker) { return std::ranges::contains(ids, tracker.id()); });
-        if (erased == 0) {
-            return;
-        }
-        mRpc->setTorrentProperty(mData.id, trackerListKey, toTrackerList(toTieredAnnounceUrls(trackers)), true);
     }
 
     void Torrent::setFilesEnabled(bool enabled) {
@@ -738,27 +432,11 @@ namespace tremotesf {
     }
 
     void Torrent::setFilesWanted(std::span<const int> fileIds, bool wanted) {
-        mRpc->setTorrentProperty(mData.id, wanted ? wantedFilesKey : unwantedFilesKey, toJsonArray(fileIds));
+        mRpc->setTorrentFilesWanted(mData.id, fileIds, wanted);
     }
 
     void Torrent::setFilesPriority(std::span<const int> fileIds, TorrentFile::Priority priority) {
-        QLatin1String propertyName;
-        switch (priority) {
-        case TorrentFile::Priority::Low:
-            propertyName = lowPriorityKey;
-            break;
-        case TorrentFile::Priority::Normal:
-            propertyName = normalPriorityKey;
-            break;
-        case TorrentFile::Priority::High:
-            propertyName = highPriorityKey;
-            break;
-        }
-        mRpc->setTorrentProperty(mData.id, propertyName, toJsonArray(fileIds));
-    }
-
-    void Torrent::renameFile(const QString& path, const QString& newName) {
-        mRpc->renameTorrentFile(mData.id, path, newName);
+        mRpc->setTorrentFilesPriority(mData.id, fileIds, priority);
     }
 
     void Torrent::setPeersEnabled(bool enabled) {
@@ -772,8 +450,8 @@ namespace tremotesf {
         }
     }
 
-    bool Torrent::update(const QJsonObject& object) {
-        const bool c = mData.update(object, false, mRpc);
+    bool Torrent::update(const QVariantList& values) {
+        const bool c = mData.update(values, false, mRpc);
         emit updated();
         if (c) {
             emit changed();
@@ -781,54 +459,35 @@ namespace tremotesf {
         return c;
     }
 
-    bool Torrent::update(std::span<const std::optional<TorrentData::UpdateKey>> keys, const QJsonArray& values) {
-        const bool c = mData.update(keys, values, false, mRpc);
-        emit updated();
-        if (c) {
-            emit changed();
-        }
-        return c;
-    }
-
-    void Torrent::updateFiles(const QJsonObject& torrentMap) {
+    void Torrent::updateFiles(const QVariantList& rows) {
         std::vector<int> changed{};
-
-        const QJsonArray fileStats = torrentMap.value("fileStats"_L1).toArray();
-        if (!fileStats.isEmpty()) {
-            if (mFiles.empty()) {
-                const QJsonArray fileJsons = torrentMap.value("files"_L1).toArray();
-                if (fileJsons.size() == fileStats.size()) {
-                    const auto count = fileJsons.size();
-                    mFiles.reserve(static_cast<size_t>(count));
-                    changed.reserve(static_cast<size_t>(count));
-                    for (QJsonArray::size_type i = 0; i < count; ++i) {
-                        mFiles.emplace_back(fileJsons[i].toObject(), fileStats[i].toObject());
-                        changed.push_back(static_cast<int>(i));
-                    }
-                } else {
-                    warning().log("fileStats and files arrays have different sizes for torrent {}", *this);
+        if (static_cast<size_t>(rows.size()) != mFiles.size()) {
+            mFiles.clear();
+            mFiles.reserve(static_cast<size_t>(rows.size()));
+            changed.reserve(static_cast<size_t>(rows.size()));
+            for (qsizetype i = 0; i < rows.size(); ++i) {
+                const auto row = rows.at(i).toList();
+                mFiles.emplace_back(row, mData.chunkSize);
+                changed.push_back(static_cast<int>(i));
+            }
+        } else {
+            for (qsizetype i = 0; i < rows.size(); ++i) {
+                const auto row = rows.at(i).toList();
+                if (row.isEmpty()) {
+                    continue;
                 }
-            } else {
-                if (static_cast<size_t>(fileStats.size()) == mFiles.size()) {
-                    for (QJsonArray::size_type i = 0, max = fileStats.size(); i < max; ++i) {
-                        TorrentFile& file = mFiles[static_cast<size_t>(i)];
-                        if (file.update(fileStats[i].toObject())) {
-                            changed.push_back(static_cast<int>(i));
-                        }
-                    }
-                } else {
-                    warning().log("fileStats array has different size than in previous update for torrent {}", *this);
+                if (mFiles[static_cast<size_t>(i)].update(row, mData.chunkSize)) {
+                    changed.push_back(static_cast<int>(i));
                 }
             }
         }
-
         emit filesUpdated(changed);
     }
 
     namespace {
         struct NewPeer {
-            QJsonObject json;
-            QString address;
+            QVariantList row{};
+            QString address{};
         };
 
         class PeersListUpdater final : public ItemListUpdater<Peer, std::vector<NewPeer>> {
@@ -852,20 +511,14 @@ namespace tremotesf {
             }
 
             // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-            bool updateItem(Peer& peer, NewPeer&& newPeer) override {
-                const auto& [json, address] = newPeer;
-                return peer.update(json);
-            }
+            bool updateItem(Peer& peer, NewPeer&& newPeer) override { return peer.update(newPeer.row); }
 
             void onChangedItems(size_t first, size_t last) override {
                 changedIndexRanges.emplace_back(static_cast<int>(first), static_cast<int>(last));
             }
 
             // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-            Peer createItemFromNewItem(NewPeer&& newPeer) override {
-                auto& [json, address] = newPeer;
-                return Peer(std::move(address), json);
-            }
+            Peer createItemFromNewItem(NewPeer&& newPeer) override { return Peer(newPeer.address, newPeer.row); }
 
             void onAboutToAddItems(size_t) override {}
 
@@ -873,16 +526,19 @@ namespace tremotesf {
         };
     }
 
-    void Torrent::updatePeers(const QJsonObject& torrentMap) {
-        std::vector<NewPeer> newPeers;
-        {
-            const QJsonArray peers(torrentMap.value("peers"_L1).toArray());
-            newPeers.reserve(static_cast<size_t>(peers.size()));
-            for (const auto& i : peers) {
-                QJsonObject json = i.toObject();
-                QString address(json.value(Peer::addressKey).toString());
-                newPeers.push_back(NewPeer{.json = std::move(json), .address = std::move(address)});
+    void Torrent::updatePeers(const QVariantList& rows) {
+        std::vector<NewPeer> newPeers{};
+        newPeers.reserve(static_cast<size_t>(rows.size()));
+        for (const auto& rowValue : rows) {
+            const auto row = rowValue.toList();
+            if (row.isEmpty()) {
+                continue;
             }
+            const QString address = row.constFirst().toString();
+            if (address.isEmpty()) {
+                continue;
+            }
+            newPeers.push_back({.row = row, .address = address});
         }
 
         PeersListUpdater updater{};

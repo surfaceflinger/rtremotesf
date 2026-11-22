@@ -11,16 +11,15 @@
 #include <vector>
 
 #include <QDateTime>
-#include <QJsonArray>
 #include <QObject>
+#include <QStringList>
 #include <QTimeZone>
+#include <QVariant>
 
 #include "log/formatters.h"
 #include "peer.h"
 #include "torrentfile.h"
 #include "tracker.h"
-
-class QJsonObject;
 
 namespace tremotesf {
     class Rpc;
@@ -47,18 +46,9 @@ namespace tremotesf {
         Q_ENUM(Priority)
         static int priorityToInt(Priority value);
 
-        enum class RatioLimitMode { Global, Single, Unlimited };
-        Q_ENUM(RatioLimitMode)
-
-        enum class IdleSeedingLimitMode { Global, Single, Unlimited };
-        Q_ENUM(IdleSeedingLimitMode)
-
-        [[nodiscard]] bool update(const QJsonObject& object, bool firstTime, const Rpc* rpc);
+        [[nodiscard]] bool update(const QVariantList& values, bool firstTime, const Rpc* rpc);
 
         enum class UpdateKey;
-        [[nodiscard]] bool update(
-            std::span<const std::optional<UpdateKey>> keys, const QJsonArray& values, bool firstTime, const Rpc* rpc
-        );
 
         int id{};
         QString hashString{};
@@ -68,8 +58,6 @@ namespace tremotesf {
         Status status{};
         Error error{};
         QString errorString{};
-
-        int queuePosition{};
 
         qint64 totalSize{};
         qint64 completedSize{};
@@ -85,20 +73,12 @@ namespace tremotesf {
         qint64 downloadSpeed{};
         qint64 uploadSpeed{};
 
-        bool downloadSpeedLimited{};
-        int downloadSpeedLimit{}; // kB/s
-        bool uploadSpeedLimited{};
-        int uploadSpeedLimit{}; // kB/s
-
         qint64 totalDownloaded{};
         qint64 totalUploaded{};
         double ratio{};
-        double ratioLimit{};
-        RatioLimitMode ratioLimitMode{};
 
         int totalSeedersFromTrackersCount{};
         int peersSendingToUsCount{};
-        std::vector<QString> webSeeders{};
         int webSeedersSendingToUsCount{};
         int totalLeechersFromTrackersCount{};
         int peersGettingFromUsCount{};
@@ -109,18 +89,27 @@ namespace tremotesf {
         QDateTime activityDate{{}, {}, QTimeZone::utc()};
         QDateTime doneDate{{}, {}, QTimeZone::utc()};
 
-        IdleSeedingLimitMode idleSeedingLimitMode{};
-        int idleSeedingLimit{};
         QString downloadDirectory{};
-        QString comment{};
-        QString creator{};
+        QString rootDirectory{};
+        QString basePath{};
+        bool isMultiFile{};
         QDateTime creationDate{{}, {}, QTimeZone::utc()};
         Priority bandwidthPriority{};
-        bool honorSessionLimits;
 
         std::vector<QString> labels{};
 
         std::vector<Tracker> trackers{};
+
+        qint64 chunkSize{};
+        int chunksHashed{};
+        int chunksTotal{};
+
+        int state{};
+        bool hashing{};
+        bool hashChecking{};
+        bool complete{};
+        bool hashingFailed{};
+        bool isMeta{};
 
         [[nodiscard]] bool hasError() const { return error != Error::None; }
         [[nodiscard]] bool isFinished() const { return leftUntilDone == 0; }
@@ -131,48 +120,25 @@ namespace tremotesf {
 
     private:
         void updateProperty(
-            TorrentData::UpdateKey key, const QJsonValue& value, bool& changed, bool firstTime, const Rpc* rpc
+            TorrentData::UpdateKey key, const QVariant& value, bool& changed, bool firstTime, const Rpc* rpc
         );
-        void applyTrackerErrorWorkaround(bool& changed);
+        void recomputeDerived(bool& changed);
     };
 
     class Torrent final : public QObject {
         Q_OBJECT
 
     public:
-        explicit Torrent(int id, const QJsonObject& object, Rpc* rpc, QObject* parent = nullptr);
-        explicit Torrent(
-            int id,
-            std::span<const std::optional<TorrentData::UpdateKey>> keys,
-            const QJsonArray& values,
-            Rpc* rpc,
-            QObject* parent = nullptr
-        );
+        explicit Torrent(int id, const QString& hash, const QVariantList& values, Rpc* rpc, QObject* parent = nullptr);
         // For testing only
         explicit Torrent() = default;
 
-        [[nodiscard]] static QJsonArray updateFields(const ServerSettings* serverSettings);
-        [[nodiscard]] static std::optional<int> idFromJson(const QJsonObject& object);
-        [[nodiscard]] static std::optional<QJsonArray::size_type>
-        idKeyIndex(std::span<const std::optional<TorrentData::UpdateKey>> keys);
-        [[nodiscard]] static std::vector<std::optional<TorrentData::UpdateKey>>
-        mapUpdateKeys(const QJsonArray& stringKeys);
+        [[nodiscard]] static QStringList updateFields();
 
-        void setDownloadSpeedLimited(bool limited);
-        void setDownloadSpeedLimit(int limit);
-        void setUploadSpeedLimited(bool limited);
-        void setUploadSpeedLimit(int limit);
-        void setRatioLimitMode(TorrentData::RatioLimitMode mode);
-        void setRatioLimit(double limit);
         void setPeersLimit(int limit);
-        void setHonorSessionLimits(bool honor);
         void setBandwidthPriority(TorrentData::Priority priority);
-        void setIdleSeedingLimitMode(TorrentData::IdleSeedingLimitMode mode);
-        void setIdleSeedingLimit(int limit);
 
         void addTrackers(std::span<const std::set<QString>> announceUrls);
-        void setTracker(int trackerId, const QString& announce);
-        void removeTrackers(std::span<const int> trackerIds);
 
         [[nodiscard]] const TorrentData& data() const { return mData; };
 
@@ -182,17 +148,14 @@ namespace tremotesf {
 
         void setFilesWanted(std::span<const int> fileIds, bool wanted);
         void setFilesPriority(std::span<const int> fileIds, TorrentFile::Priority priority);
-        void renameFile(const QString& path, const QString& newName);
 
         [[nodiscard]] bool isPeersEnabled() const { return mPeersEnabled; };
         void setPeersEnabled(bool enabled);
         [[nodiscard]] const std::vector<Peer>& peers() const { return mPeers; };
 
-        [[nodiscard]] bool update(const QJsonObject& object);
-        [[nodiscard]] bool
-        update(std::span<const std::optional<TorrentData::UpdateKey>> keys, const QJsonArray& values);
-        void updateFiles(const QJsonObject& torrentMap);
-        void updatePeers(const QJsonObject& torrentMap);
+        [[nodiscard]] bool update(const QVariantList& values);
+        void updateFiles(const QVariantList& rows);
+        void updatePeers(const QVariantList& rows);
 
     private:
         Rpc* mRpc{};
@@ -214,14 +177,7 @@ namespace tremotesf {
             const std::vector<std::pair<int, int>>& changedIndexRanges,
             int addedCount
         );
-        void fileRenamed(const QString& filePath, const QString& newName);
     };
-
-    namespace impl {
-        std::vector<std::set<QString>> mergeTrackers(
-            const std::vector<std::set<QString>>& existingTrackers, std::span<const std::set<QString>> newTrackers
-        );
-    }
 }
 
 namespace fmt {

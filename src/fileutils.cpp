@@ -9,8 +9,6 @@
 
 #include <QCoreApplication>
 #include <QFile>
-#include <QDir>
-#include <QStandardPaths>
 #include <QStringBuilder>
 
 #include <fmt/format.h>
@@ -256,59 +254,4 @@ namespace tremotesf {
         return root % '/' % path;
     }
 
-    namespace impl {
-        QString readFileAsBase64String(QFile& file) {
-            QString string{};
-            string.reserve(static_cast<QString::size_type>(((4 * file.size() / 3) + 3) & ~3));
-
-            static constexpr qint64 bufferSize = 1024 * 1024 - 1; // 1 MiB minus 1 byte (dividable by 3)
-            QByteArray buffer(bufferSize, '\0');
-
-            while (true) {
-                const auto result = readWholeBufferOrUntilEndOfFile(file, buffer);
-                if (std::holds_alternative<ReadWholeBuffer>(result)) {
-                    string.append(QLatin1String(buffer.toBase64()));
-                    continue;
-                }
-                if (const auto readUntilEndOfFile = std::get_if<ReadUntilEndOfFile>(&result); readUntilEndOfFile) {
-                    buffer.resize(static_cast<QByteArray::size_type>(readUntilEndOfFile->bytesRead));
-                    string.append(QLatin1String(buffer.toBase64()));
-                    break;
-                }
-            }
-
-            return string;
-        }
-
-        namespace {
-            constexpr auto sessionIdFileLocation = [] {
-                if constexpr (targetOs == TargetOs::Windows) {
-                    return QStandardPaths::GenericDataLocation;
-                } else {
-                    return QStandardPaths::TempLocation;
-                }
-            }();
-
-            constexpr QLatin1String sessionIdFilePrefix = [] {
-                if constexpr (targetOs == TargetOs::Windows) {
-                    return "Transmission/tr_session_id_"_L1;
-                } else {
-                    return "tr_session_id_"_L1;
-                }
-            }();
-        }
-
-        bool isTransmissionSessionIdFileExists(QByteArrayView sessionId) {
-            const auto file = QStandardPaths::locate(sessionIdFileLocation, sessionIdFilePrefix % sessionId);
-            if (!file.isEmpty()) {
-                info().log(
-                    "isSessionIdFileExists: found transmission-daemon session id file {}",
-                    QDir::toNativeSeparators(file)
-                );
-                return true;
-            }
-            info().log("isSessionIdFileExists: did not find transmission-daemon session id file");
-            return false;
-        }
-    }
 }

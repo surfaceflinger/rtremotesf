@@ -42,12 +42,6 @@
         "kwidgetsaddons",
         "cxxopts",
         {
-            "name": "cpp-httplib",
-            "features": [
-                "openssl"
-            ]
-        },
-        {
             "name": "pkgconf",
             "platform": "windows",
             "host": true

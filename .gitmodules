@@ -1,7 +1,0 @@
-# SPDX-FileCopyrightText: 2015-2025 Alexey Rochev
-#
-# SPDX-License-Identifier: CC0-1.0
-
-[submodule "src/3rdparty/cpp-httplib"]
-	path = src/3rdparty/cpp-httplib
-	url = https://github.com/yhirose/cpp-httplib.git

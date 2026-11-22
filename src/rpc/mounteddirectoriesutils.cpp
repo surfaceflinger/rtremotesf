@@ -26,13 +26,16 @@ namespace tremotesf {
 
     QString localTorrentDownloadDirectoryPath(const Rpc* rpc, const Torrent* torrent) {
         const auto serverSettings = rpc->serverSettings();
-        const bool incompleteDirectoryEnabled = serverSettings->data().incompleteDirectoryEnabled;
-        QString directory{};
-        if (incompleteDirectoryEnabled && torrent->data().leftUntilDone > 0) {
-            directory = serverSettings->data().incompleteDirectory;
-        } else {
-            directory = torrent->data().downloadDirectory;
+        QString directory = torrent->data().downloadDirectory;
+        if (!rpc->isLocal() && !directory.isEmpty() && Servers::instance()->currentServerHasMountedDirectories()) {
+            directory = Servers::instance()->fromRemoteToLocalDirectory(directory, serverSettings);
         }
+        return directory;
+    }
+
+    QString localTorrentRootDirectoryPath(const Rpc* rpc, const Torrent* torrent) {
+        const auto serverSettings = rpc->serverSettings();
+        auto directory = torrent->data().rootDirectory;
         if (!rpc->isLocal() && !directory.isEmpty() && Servers::instance()->currentServerHasMountedDirectories()) {
             directory = Servers::instance()->fromRemoteToLocalDirectory(directory, serverSettings);
         }
@@ -40,21 +43,16 @@ namespace tremotesf {
     }
 
     QString localTorrentRootFilePath(const Rpc* rpc, const Torrent* torrent) {
-        const QString downloadDirectoryPath = localTorrentDownloadDirectoryPath(rpc, torrent);
-        if (downloadDirectoryPath.isEmpty()) {
-            return {};
-        }
-        const auto& torrentName = torrent->data().name;
-        QString rootFilePath = downloadDirectoryPath % '/' % torrentName;
-
-        if (rpc->serverSettings()->data().renameIncompleteFiles && torrent->data().leftUntilDone > 0) {
-            const QString incompleteRootFilePath = rootFilePath % ".part"_L1;
-            // Don't return incomplete file path unless it exists because we don't know whether it's supposed to be a directory or a file,
-            // and in case of directory this path can't exist so we don't want to try to open it
-            if (QFileInfo::exists(incompleteRootFilePath)) {
-                return incompleteRootFilePath;
+        auto path = torrent->data().basePath;
+        if (path.isEmpty()) {
+            const QString downloadDirectoryPath = localTorrentDownloadDirectoryPath(rpc, torrent);
+            if (downloadDirectoryPath.isEmpty()) {
+                return {};
             }
+            path = downloadDirectoryPath % '/' % torrent->data().name;
+        } else if (!rpc->isLocal() && Servers::instance()->currentServerHasMountedDirectories()) {
+            path = Servers::instance()->fromRemoteToLocalDirectory(path, rpc->serverSettings());
         }
-        return rootFilePath;
+        return path;
     }
 }

@@ -10,7 +10,7 @@
 #include <exception>
 #include <vector>
 
-#include "coroutinefwd.h"
+#include "coroutines.h"
 
 namespace tremotesf {
     class CoroutineScope {
@@ -20,11 +20,20 @@ namespace tremotesf {
         Q_DISABLE_COPY_MOVE(CoroutineScope)
 
         void launch(Coroutine<> coroutine);
+        template<typename T>
+        void launch(Coroutine<T> coroutine) {
+            launch(discardResult(std::move(coroutine)));
+        }
         void cancelAll();
 
         inline size_t coroutinesCount() const { return mCoroutines.size(); }
 
     private:
+        template<typename T>
+        static Coroutine<> discardResult(Coroutine<T> coroutine) {
+            co_await std::move(coroutine);
+        }
+
         void onCoroutineCompleted(impl::StandaloneCoroutine* coroutine, const std::exception_ptr& unhandledException);
 
         std::vector<impl::StandaloneCoroutine*> mCoroutines{};

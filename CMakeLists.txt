@@ -19,11 +19,6 @@ project(tremotesf VERSION 2.10.1 LANGUAGES ${languages})
 
 option(TREMOTESF_ASAN "Build with AddressSanitizer" OFF)
 
-set(TREMOTESF_WITH_HTTPLIB "auto" CACHE STRING "Where to find cpp-httplib dependency for unit tests. Possible values are: auto, system, bundled, none")
-if (NOT TREMOTESF_WITH_HTTPLIB MATCHES "^(auto|system|bundled|none)$")
-    message(FATAL_ERROR "Invalid TREMOTESF_WITH_HTTPLIB value ${TREMOTESF_WITH_HTTPLIB}. Possible values are: auto, system, bundled, none")
-endif()
-
 include(CTest)
 include(GNUInstallDirs)
 

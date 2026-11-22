@@ -4,7 +4,6 @@
 
 #include "tracker.h"
 
-#include <QJsonObject>
 #include <QHostAddress>
 #include <QUrl>
 
@@ -12,72 +11,72 @@
 #    include <libpsl.h>
 #endif
 
-#include "jsonutils.h"
 #include "stdutils.h"
 
 using namespace Qt::StringLiterals;
 
 namespace tremotesf {
-    using namespace impl;
     namespace {
-        constexpr auto statusMapper = EnumMapper(
-            std::array{
-                EnumMapping(Tracker::Status::Inactive, 0),
-                EnumMapping(Tracker::Status::WaitingForUpdate, 1),
-                EnumMapping(Tracker::Status::QueuedForUpdate, 2),
-                EnumMapping(Tracker::Status::Updating, 3)
+        QDateTime dateTimeFromSeconds(const QVariant& value) {
+            const auto seconds = value.toLongLong();
+            if (seconds <= 0) {
+                return QDateTime{{}, {}, QTimeZone::utc()};
             }
-        );
+            return QDateTime::fromSecsSinceEpoch(seconds, QTimeZone::utc());
+        }
     }
 
-    Tracker::Tracker(int id, const QJsonObject& trackerMap) : mId(id) { update(trackerMap); }
+    Tracker::Tracker(int id, const QVariantList& row) : mId(id) { update(row); }
 
-    bool Tracker::update(const QJsonObject& trackerMap) {
+    bool Tracker::update(const QVariantList& row) {
         bool changed = false;
 
-        QString announce(trackerMap.value("announce"_L1).toString());
-        if (announce != mAnnounce) {
-            changed = true;
-            mAnnounce = std::move(announce);
-            mSite = registrableDomainFromUrl(QUrl(mAnnounce));
+        if (row.size() >= 1) {
+            QString announce(row.at(0).toString());
+            if (announce != mAnnounce) {
+                changed = true;
+                mAnnounce = std::move(announce);
+                mSite = impl::registrableDomainFromUrl(QUrl(mAnnounce));
+            }
+        }
+        if (row.size() >= 2) {
+            setChanged(mTier, row.at(1).toInt(), changed);
         }
 
-        setChanged(mTier, trackerMap.value("tier"_L1).toInt(), changed);
+        const bool enabled = row.size() >= 3 && (row.at(2).toBool() || row.at(2).toInt() != 0);
+        const bool usable = row.size() < 4 || row.at(3).toBool() || row.at(3).toInt() != 0;
+        const bool busy = row.size() >= 5 && (row.at(4).toBool() || row.at(4).toInt() != 0);
 
-        const bool announceError =
-            (!trackerMap.value("lastAnnounceSucceeded"_L1).toBool()
-             && trackerMap.value("lastAnnounceTime"_L1).toInt() != 0);
-        if (announceError) {
-            setChanged(mErrorMessage, trackerMap.value("lastAnnounceResult"_L1).toString(), changed);
+        Status status{};
+        if (!enabled) {
+            status = Status::Inactive;
+        } else if (busy) {
+            status = Status::Updating;
         } else {
-            setChanged(mErrorMessage, {}, changed);
+            status = Status::WaitingForUpdate;
         }
+        setChanged(mStatus, status, changed);
 
-        constexpr auto announceStateKey = "announceState"_L1;
-        setChanged(mStatus, statusMapper.fromJsonValue(trackerMap.value(announceStateKey), announceStateKey), changed);
-
-        setChanged(mPeers, trackerMap.value("lastAnnouncePeerCount"_L1).toInt(), changed);
+        const int successCounter = row.size() >= 10 ? row.at(9).toInt() : 0;
+        const int failedCounter = row.size() >= 11 ? row.at(10).toInt() : 0;
         setChanged(
-            mSeeders,
-            [&] {
-                if (auto seeders = trackerMap.value("seederCount"_L1).toInt(); seeders >= 0) {
-                    return seeders;
-                }
-                return 0;
-            }(),
+            mErrorMessage,
+            (!usable && failedCounter > successCounter) ? QString("Tracker error"_L1) : QString{},
             changed
         );
-        setChanged(
-            mLeechers,
-            [&] {
-                if (auto leechers = trackerMap.value("leecherCount"_L1).toInt(); leechers >= 0) {
-                    return leechers;
-                }
-                return 0;
-            }(),
-            changed
-        );
-        updateDateTime(mNextUpdateTime, trackerMap.value("nextAnnounceTime"_L1), changed);
+
+        if (row.size() >= 6) {
+            setChanged(mSeeders, row.at(5).toInt(), changed);
+        }
+        if (row.size() >= 7) {
+            setChanged(mLeechers, row.at(6).toInt(), changed);
+        }
+        if (row.size() >= 8) {
+            setChanged(mPeers, row.at(7).toInt(), changed);
+        }
+        if (row.size() >= 9) {
+            setChanged(mNextUpdateTime, dateTimeFromSeconds(row.at(8)), changed);
+        }
 
         return changed;
     }

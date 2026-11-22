@@ -50,15 +50,17 @@ target_sources(tremotesf_objects
     rpc/mounteddirectoriesutils.cpp
     rpc/pathutils.cpp
     rpc/peer.cpp
-    rpc/qsslcertificateformatter.cpp
     rpc/requestrouter.cpp
     rpc/rpc.cpp
+    rpc/safedelete.cpp
+    rpc/scgi.cpp
     rpc/servers.cpp
     rpc/serversettings.cpp
     rpc/serverstats.cpp
     rpc/torrent.cpp
     rpc/torrentfile.cpp
     rpc/tracker.cpp
+    rpc/xmlrpc.cpp
 
     startup/commandlineparser.cpp
 
@@ -158,15 +160,17 @@ target_sources(tremotesf_objects
     rpc/numbervaluerange.h
     rpc/pathutils.h
     rpc/peer.h
-    rpc/qsslcertificateformatter.h
     rpc/requestrouter.h
     rpc/rpc.h
+    rpc/safedelete.h
+    rpc/scgi.h
     rpc/servers.h
     rpc/serversettings.h
     rpc/serverstats.h
     rpc/torrent.h
     rpc/torrentfile.h
     rpc/tracker.h
+    rpc/xmlrpc.h
 
     startup/commandlineparser.h
     startup/signalhandler.h
@@ -462,23 +466,25 @@ if (BUILD_TESTING)
     add_test(NAME demangle_test COMMAND demangle_test)
     target_link_libraries(demangle_test PRIVATE tremotesf_objects Qt::Test)
 
-    if (NOT TREMOTESF_WITH_HTTPLIB STREQUAL "none")
-        include("${CMAKE_SOURCE_DIR}/cmake/FindCppHttplib.cmake")
-        find_cpp_httplib()
-        add_executable(requestrouter_test rpc/requestrouter_test.cpp)
-        target_compile_definitions(requestrouter_test PRIVATE TEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/rpc/test-data")
-        add_test(NAME requestrouter_test COMMAND requestrouter_test)
-        target_link_libraries(requestrouter_test PRIVATE tremotesf_objects Qt::Test)
-        if (TARGET PkgConfig::httplib)
-            target_link_libraries(requestrouter_test PRIVATE PkgConfig::httplib)
-        else ()
-            target_link_libraries(requestrouter_test PRIVATE httplib::httplib)
-        endif ()
-    endif()
-
     add_executable(pathutils_test rpc/pathutils_test.cpp)
     add_test(NAME pathutils_test COMMAND pathutils_test)
     target_link_libraries(pathutils_test PRIVATE tremotesf_objects Qt::Test)
+
+    add_executable(safedelete_test rpc/safedelete_test.cpp)
+    add_test(NAME safedelete_test COMMAND safedelete_test)
+    target_link_libraries(safedelete_test PRIVATE tremotesf_objects Qt::Test)
+
+    add_executable(xmlrpc_test rpc/xmlrpc_test.cpp)
+    add_test(NAME xmlrpc_test COMMAND xmlrpc_test)
+    target_link_libraries(xmlrpc_test PRIVATE tremotesf_objects Qt::Test)
+
+    add_executable(scgi_test rpc/scgi_test.cpp)
+    add_test(NAME scgi_test COMMAND scgi_test)
+    target_link_libraries(scgi_test PRIVATE tremotesf_objects Qt::Test)
+
+    add_executable(torrent_test rpc/torrent_test.cpp)
+    add_test(NAME torrent_test COMMAND torrent_test)
+    target_link_libraries(torrent_test PRIVATE tremotesf_objects Qt::Test)
 
     add_executable(tracker_test rpc/tracker_test.cpp)
     add_test(NAME tracker_test COMMAND tracker_test)
@@ -487,11 +493,6 @@ if (BUILD_TESTING)
     add_executable(servers_test rpc/servers_test.cpp)
     add_test(NAME servers_test COMMAND servers_test)
     target_link_libraries(servers_test PRIVATE tremotesf_objects Qt::Test)
-
-    add_executable(servers_migration_test rpc/servers_migration_test.cpp)
-    target_compile_definitions(servers_migration_test PRIVATE TEST_DATA_PATH="${CMAKE_CURRENT_SOURCE_DIR}/rpc/test-data")
-    add_test(NAME servers_migration_test COMMAND servers_migration_test)
-    target_link_libraries(servers_migration_test PRIVATE tremotesf_objects Qt::Test)
 
     add_executable(coroutines_test coroutines/coroutines_test.cpp)
     add_test(NAME coroutines_test COMMAND coroutines_test)

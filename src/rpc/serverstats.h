@@ -6,48 +6,30 @@
 #define TREMOTESF_RPC_SERVERSTATS_H
 
 #include <QObject>
-
-class QJsonObject;
+#include <QStringList>
+#include <QVariantList>
 
 namespace tremotesf {
-    class SessionStats {
-    public:
-        [[nodiscard]] qint64 downloaded() const { return mDownloaded; };
-        [[nodiscard]] qint64 uploaded() const { return mUploaded; };
-        [[nodiscard]] int duration() const { return mDuration; };
-        [[nodiscard]] int sessionCount() const { return mSessionCount; };
-
-        void update(const QJsonObject& stats);
-
-    private:
-        qint64 mDownloaded{};
-        qint64 mUploaded{};
-        int mDuration{};
-        int mSessionCount{};
-    };
-
     class ServerStats final : public QObject {
         Q_OBJECT
 
     public:
         using QObject::QObject;
 
+        static QStringList requestCommands();
+
         [[nodiscard]] qint64 downloadSpeed() const { return mDownloadSpeed; };
         [[nodiscard]] qint64 uploadSpeed() const { return mUploadSpeed; };
-        [[nodiscard]] qint64 freeSpace() const { return mFreeSpace; };
+        [[nodiscard]] qint64 downloaded() const { return mDownloaded; };
+        [[nodiscard]] qint64 uploaded() const { return mUploaded; };
 
-        [[nodiscard]] SessionStats currentSession() const { return mCurrentSession; };
-        [[nodiscard]] SessionStats total() const { return mTotal; };
-
-        void update(std::optional<QJsonObject> serverStats, std::optional<qint64> freeSpace);
-        void setFreeSpace(const qint64 freeSpace);
+        void update(const QVariantList& values);
 
     private:
         qint64 mDownloadSpeed{};
         qint64 mUploadSpeed{};
-        qint64 mFreeSpace{};
-        SessionStats mCurrentSession{};
-        SessionStats mTotal{};
+        qint64 mDownloaded{};
+        qint64 mUploaded{};
     signals:
         void updated();
     };

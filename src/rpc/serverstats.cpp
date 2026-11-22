@@ -4,30 +4,31 @@
 
 #include "serverstats.h"
 
-#include <QJsonObject>
-
 using namespace Qt::StringLiterals;
 
 namespace tremotesf {
-    void SessionStats::update(const QJsonObject& stats) {
-        mDownloaded = stats.value("downloadedBytes"_L1).toInteger();
-        mUploaded = stats.value("uploadedBytes"_L1).toInteger();
-        mDuration = stats.value("secondsActive"_L1).toInt();
-        mSessionCount = stats.value("sessionCount"_L1).toInt();
+    QStringList ServerStats::requestCommands() {
+        return {
+            "throttle.global_down.rate"_L1,
+            "throttle.global_up.rate"_L1,
+            "throttle.global_down.total"_L1,
+            "throttle.global_up.total"_L1
+        };
     }
 
-    void ServerStats::update(std::optional<QJsonObject> serverStats, std::optional<qint64> freeSpace) {
-        if (serverStats.has_value()) {
-            mDownloadSpeed = serverStats->value("downloadSpeed"_L1).toInteger();
-            mUploadSpeed = serverStats->value("uploadSpeed"_L1).toInteger();
-            mCurrentSession.update(serverStats->value("current-stats"_L1).toObject());
-            mTotal.update(serverStats->value("cumulative-stats"_L1).toObject());
+    void ServerStats::update(const QVariantList& values) {
+        if (values.size() >= 1) {
+            mDownloadSpeed = values.at(0).toLongLong();
         }
-        if (freeSpace.has_value()) {
-            mFreeSpace = *freeSpace;
+        if (values.size() >= 2) {
+            mUploadSpeed = values.at(1).toLongLong();
+        }
+        if (values.size() >= 3) {
+            mDownloaded = values.at(2).toLongLong();
+        }
+        if (values.size() >= 4) {
+            mUploaded = values.at(3).toLongLong();
         }
         emit updated();
     }
-
-    void ServerStats::setFreeSpace(const qint64 freeSpace) { mFreeSpace = freeSpace; }
 }

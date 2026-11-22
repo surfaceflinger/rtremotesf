@@ -22,13 +22,13 @@ namespace tremotesf {
     inline constexpr auto nonNegativeDecimalsRange =
         NumberValueRange{.min = 0.0, .max = std::numeric_limits<double>::max()};
 
-    // Transmission processes it as unsigned 16-bit integer
+    // Port and peer/minute limits are unsigned 16-bit values
     inline constexpr auto minutesRange =
         NumberValueRange{.min = 0, .max = static_cast<int>(std::numeric_limits<unsigned short>::max())};
     inline constexpr auto portsRange = minutesRange;
     inline constexpr auto peersLimitRange = minutesRange;
 
-    // Transmission processes it as unsigned 32-bit integer that's multiplied by 1000 and stored as unsigned 32-bit integer
+    // Speed limits are in kB/s
     inline constexpr auto speedLimitKbpsRange =
         NumberValueRange{.min = 0, .max = static_cast<int>(std::numeric_limits<unsigned int>::max() / 1000)};
 

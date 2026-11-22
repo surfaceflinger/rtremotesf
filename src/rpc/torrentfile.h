@@ -7,8 +7,7 @@
 
 #include <QObject>
 #include <QString>
-
-class QJsonObject;
+#include <QVariantList>
 
 namespace tremotesf {
     struct TorrentFile {
@@ -17,8 +16,8 @@ namespace tremotesf {
         enum class Priority { Low, Normal, High };
         Q_ENUM(Priority)
 
-        explicit TorrentFile(const QJsonObject& fileMap, const QJsonObject& fileStatsMap);
-        bool update(const QJsonObject& fileStatsMap);
+        explicit TorrentFile(const QVariantList& row, qint64 chunkSize);
+        bool update(const QVariantList& row, qint64 chunkSize);
 
         QString path{};
         qint64 size{};
