@@ -7,6 +7,7 @@
 #include "rpc.h"
 #include "serversettings.h"
 #include "torrent.h"
+#include "ui/screens/mainwindow/torrentsmodel.h"
 #include "ui/screens/torrentproperties/peersmodel.h"
 #include "ui/screens/torrentproperties/trackersmodel.h"
 
@@ -176,6 +177,13 @@ private slots:
         model.setTorrent(&torrent, false);
         QVERIFY(!model.data(QModelIndex{}, Qt::DisplayRole).isValid());
         QVERIFY(!model.data(model.index(0, 0), Qt::DisplayRole).isValid());
+    }
+
+    void torrentsModelHandlesMissingRpc() {
+        TorrentsModel model(nullptr);
+        QCOMPARE(model.rowCount(QModelIndex{}), 0);
+        QVERIFY(!model.data(QModelIndex{}, Qt::DisplayRole).isValid());
+        QVERIFY(!model.torrentAtRow(0));
     }
 };
 

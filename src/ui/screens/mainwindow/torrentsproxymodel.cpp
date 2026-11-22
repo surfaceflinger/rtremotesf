@@ -164,6 +164,9 @@ namespace tremotesf {
 
     bool TorrentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex&) const {
         const Torrent* torrent = static_cast<TorrentsModel*>(sourceModel())->torrentAtRow(sourceRow);
+        if (!torrent) {
+            return false;
+        }
 
         if (!mSearchString.isEmpty() && !torrent->data().name.contains(mSearchString, Qt::CaseInsensitive)) {
             return false;

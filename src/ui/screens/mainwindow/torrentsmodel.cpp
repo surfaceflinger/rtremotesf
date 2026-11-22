@@ -37,7 +37,7 @@ namespace tremotesf {
     int TorrentsModel::columnCount(const QModelIndex&) const { return QMetaEnum::fromType<Column>().keyCount(); }
 
     QVariant TorrentsModel::data(const QModelIndex& index, int role) const {
-        if (!index.isValid()) {
+        if (!index.isValid() || !mRpc || index.row() < 0 || index.row() >= mRpc->torrentsCount()) {
             return {};
         }
         const auto* const torrent = mRpc->torrents().at(static_cast<size_t>(index.row())).get();
@@ -360,7 +360,7 @@ namespace tremotesf {
         }
     }
 
-    int TorrentsModel::rowCount(const QModelIndex&) const { return mRpc->torrentsCount(); }
+    int TorrentsModel::rowCount(const QModelIndex&) const { return mRpc ? mRpc->torrentsCount() : 0; }
 
     Rpc* TorrentsModel::rpc() const { return mRpc; }
 
@@ -402,11 +402,21 @@ namespace tremotesf {
 
     Torrent* TorrentsModel::torrentAtIndex(const QModelIndex& index) const { return torrentAtRow(index.row()); }
 
-    Torrent* TorrentsModel::torrentAtRow(int row) const { return mRpc->torrents()[static_cast<size_t>(row)].get(); }
+    Torrent* TorrentsModel::torrentAtRow(int row) const {
+        if (!mRpc || row < 0 || row >= mRpc->torrentsCount()) {
+            return nullptr;
+        }
+        return mRpc->torrents()[static_cast<size_t>(row)].get();
+    }
 
     std::vector<int> TorrentsModel::idsFromIndexes(const QModelIndexList& indexes) const {
-        return indexes
-               | std::views::transform([this](const QModelIndex& index) { return torrentAtIndex(index)->data().id; })
-               | std::ranges::to<std::vector>();
+        std::vector<int> ids{};
+        ids.reserve(static_cast<size_t>(indexes.size()));
+        for (const auto& index : indexes) {
+            if (const auto* torrent = torrentAtIndex(index); torrent) {
+                ids.push_back(torrent->data().id);
+            }
+        }
+        return ids;
     }
 }
