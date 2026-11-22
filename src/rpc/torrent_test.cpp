@@ -16,6 +16,20 @@ using namespace Qt::StringLiterals;
 
 namespace {
     QVariantList torrentValues() {
+        QVariantList trackerRow{};
+        trackerRow.append(QString("https://tracker.example/announce"));
+        trackerRow.append(0);
+        trackerRow.append(true);
+        trackerRow.append(true);
+        trackerRow.append(false);
+        trackerRow.append(10);
+        trackerRow.append(20);
+        trackerRow.append(5);
+        trackerRow.append(0);
+        trackerRow.append(1);
+        trackerRow.append(0);
+        QVariantList trackers{};
+        trackers.append(QVariant::fromValue(trackerRow));
         return {
             QString("0123456789012345678901234567890123456789"), // d.hash
             QString("test torrent"), // d.name
@@ -48,9 +62,7 @@ namespace {
             2, // d.chunks_hashed
             10, // d.size_chunks
             1, // d.wanted_chunks
-            QVariantList{
-                QVariantList{QString("https://tracker.example/announce"), 0, true, true, false, 10, 20, 5, 0, 1, 0}
-            }
+            trackers
         };
     }
 }
@@ -78,7 +90,11 @@ private slots:
 
     void mapping() {
         Rpc rpc;
-        Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, torrentValues(), &rpc);
+        auto values = torrentValues();
+        const auto trackerRows = values[31].toList();
+        QCOMPARE(trackerRows.size(), qsizetype(1));
+        QCOMPARE(trackerRows.front().toList().at(5).toInt(), 10);
+        Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, values, &rpc);
         const auto& data = torrent.data();
         QCOMPARE(data.id, 42);
         QCOMPARE(data.hashString, "0123456789012345678901234567890123456789"_L1);
