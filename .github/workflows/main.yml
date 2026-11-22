@@ -43,7 +43,7 @@ jobs:
     - name: Set packages install command for zypper
       if: startsWith(matrix.container-image, 'opensuse')
       run: |
-        cmd='zypper --non-interactive in --no-recommends --details'
+        cmd='zypper --non-interactive --force-resolution in --no-recommends --details'
         echo "INSTALL_PACKAGES=$cmd" >> "$GITHUB_ENV"
         echo "INSTALL_LOCAL_PACKAGES=$cmd --allow-unsigned-rpm" >> "$GITHUB_ENV"
 
