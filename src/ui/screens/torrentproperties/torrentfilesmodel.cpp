@@ -33,12 +33,15 @@ namespace tremotesf {
         }
 
         std::pair<std::unique_ptr<TorrentFilesModelEntry>, std::vector<TorrentFilesModelEntry*>>
-        doCreateTree(const std::vector<TorrentFile>& files) {
+        doCreateTree(const std::vector<TorrentFile>& files, bool isMultiFile, QString rootName) {
             TorrentFilesTreeBuilder builder(files.size());
+            if (isMultiFile) {
+                builder.initializeRootDirectory(std::move(rootName));
+            }
             for (const TorrentFile& file : files) {
                 builder.addFile(
                     file.pathParts(),
-                    true,
+                    !isMultiFile,
                     file.size,
                     file.completedSize,
                     file.wanted,
@@ -148,8 +151,12 @@ namespace tremotesf {
         // file list while the tree is being built on the thread pool.
         auto files = torrent->files();
         auto [rootEntry, treeFiles] = co_await runOnThreadPool(
-            [](const std::vector<TorrentFile>& files) { return doCreateTree(files); },
-            std::move(files)
+            [](const std::vector<TorrentFile>& files, bool isMultiFile, QString rootName) {
+                return doCreateTree(files, isMultiFile, std::move(rootName));
+            },
+            std::move(files),
+            torrent->data().isMultiFile,
+            torrent->data().name
         );
 
         if (mTorrent != torrent) {

@@ -8,6 +8,7 @@
 
 #include "rpc/rpc.h"
 #include "rpc/torrent.h"
+#include "torrentfilesmodel.h"
 #include "torrentpropertiesdialog.h"
 
 using namespace tremotesf;
@@ -69,6 +70,27 @@ private slots:
         }
 
         QVERIFY(dialog.isVisible());
+    }
+
+    void keepsRootLevelFilesOfMultiFileTorrent() {
+        Rpc rpc;
+        auto torrent = makeTorrent(&rpc);
+        TorrentFilesModel model(&rpc);
+        model.setTorrent(torrent.get(), false);
+
+        torrent->updateFiles(
+            QVariantList{
+                QVariantList{QString("RARBG.txt"), qint64(30), 1, 1, 0},
+                QVariantList{QString("RARBG_DO_NOT_MIRROR.exe"), qint64(99), 1, 1, 0},
+                QVariantList{QString("Subs/English.srt"), qint64(135825), 1, 1, 1},
+                QVariantList{QString("Movie.mp4"), qint64(1804198899), 1, 1, 1},
+            }
+        );
+
+        QTRY_COMPARE(model.rowCount(QModelIndex{}), 1);
+        const auto root = model.index(0, 0, QModelIndex{});
+        QCOMPARE(root.data().toString(), "test torrent"_L1);
+        QTRY_COMPARE(model.rowCount(root), 4);
     }
 };
 
