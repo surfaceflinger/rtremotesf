@@ -144,6 +144,21 @@ private slots:
         QCOMPARE(torrent.data().error, TorrentData::Error::None);
     }
 
+    void offPriorityIsReadAsOff() {
+        Rpc rpc;
+        auto values = torrentValues();
+        values[17] = 0; // d.priority
+        Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, values, &rpc);
+        QCOMPARE(torrent.data().bandwidthPriority, TorrentData::Priority::Off);
+    }
+
+    void prioritiesMatchRtorrentValues() {
+        QCOMPARE(TorrentData::priorityToInt(TorrentData::Priority::Off), 0);
+        QCOMPARE(TorrentData::priorityToInt(TorrentData::Priority::Low), 1);
+        QCOMPARE(TorrentData::priorityToInt(TorrentData::Priority::Normal), 2);
+        QCOMPARE(TorrentData::priorityToInt(TorrentData::Priority::High), 3);
+    }
+
     void nonListTrackerRowIsIgnored() {
         Rpc rpc;
         auto values = torrentValues();

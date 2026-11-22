@@ -78,6 +78,8 @@ namespace tremotesf {
                     return priorityIcon(Priority::Normal);
                 case TorrentData::Priority::Low:
                     return priorityIcon(Priority::Low);
+                case TorrentData::Priority::Off:
+                    return {};
                 }
             }
             default:
@@ -142,6 +144,9 @@ namespace tremotesf {
                 case TorrentData::Priority::Low:
                     //: Torrent's loading priority
                     return qApp->translate("tremotesf", "Low");
+                case TorrentData::Priority::Off:
+                    //: Torrent's loading priority
+                    return qApp->translate("tremotesf", "Off");
                 }
                 break;
             case Column::Seeders:
@@ -220,7 +225,7 @@ namespace tremotesf {
                 }
                 return torrent->data().percentDone;
             case Column::Priority:
-                return static_cast<int>(torrent->data().bandwidthPriority);
+                return TorrentData::priorityToInt(torrent->data().bandwidthPriority);
             case Column::Status:
                 return static_cast<int>(torrent->data().status);
             case Column::DownloadSpeed:

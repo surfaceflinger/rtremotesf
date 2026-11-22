@@ -388,6 +388,7 @@ namespace tremotesf {
         QAction* mHighPriorityAction{};
         QAction* mNormalPriorityAction{};
         QAction* mLowPriorityAction{};
+        QAction* mOffPriorityAction{};
 
         std::vector<QAction*> mConnectionDependentActions;
 
@@ -637,6 +638,17 @@ namespace tremotesf {
             );
             mLowPriorityAction->setCheckable(true);
             priorityGroup->addAction(mLowPriorityAction);
+
+            //: Torrent's loading priority
+            mOffPriorityAction = priorityMenu->addAction(qApp->translate("tremotesf", "Off"));
+            QObject::connect(
+                mOffPriorityAction,
+                &QAction::triggered,
+                this,
+                std::bind_front(setTorrentsPriority, TorrentData::Priority::Off)
+            );
+            mOffPriorityAction->setCheckable(true);
+            priorityGroup->addAction(mOffPriorityAction);
         }
 
         QAction* createQuitAction() {
@@ -775,6 +787,7 @@ namespace tremotesf {
             mHighPriorityAction->setChecked(false);
             mNormalPriorityAction->setChecked(false);
             mLowPriorityAction->setChecked(false);
+            mOffPriorityAction->setChecked(false);
 
             const QModelIndexList selectedRows = mTorrentsView.selectionModel()->selectedRows();
             if (selectedRows.size() == 1) {
@@ -796,11 +809,15 @@ namespace tremotesf {
                 case TorrentData::Priority::Low:
                     mLowPriorityAction->setChecked(true);
                     break;
+                case TorrentData::Priority::Off:
+                    mOffPriorityAction->setChecked(true);
+                    break;
                 }
             } else {
                 mHighPriorityAction->setChecked(false);
                 mNormalPriorityAction->setChecked(false);
                 mLowPriorityAction->setChecked(false);
+                mOffPriorityAction->setChecked(false);
             }
 
             bool localOrMounted = true;

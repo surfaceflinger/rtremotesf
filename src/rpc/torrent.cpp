@@ -147,7 +147,8 @@ namespace tremotesf {
             std::array{
                 EnumMapping(TorrentData::Priority::Low, 1),
                 EnumMapping(TorrentData::Priority::Normal, 2),
-                EnumMapping(TorrentData::Priority::High, 3)
+                EnumMapping(TorrentData::Priority::High, 3),
+                EnumMapping(TorrentData::Priority::Off, 0)
             }
         );
 
@@ -249,6 +250,9 @@ namespace tremotesf {
         case TorrentData::UpdateKey::BandwidthPriority: {
             Priority priority{};
             switch (value.toInt()) {
+            case 0:
+                priority = Priority::Off;
+                break;
             case 1:
                 priority = Priority::Low;
                 break;

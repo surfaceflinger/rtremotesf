@@ -34,7 +34,7 @@ namespace tremotesf {
         enum class Error { None, LocalError };
         Q_ENUM(Error)
 
-        enum class Priority { Low, Normal, High };
+        enum class Priority { Low, Normal, High, Off };
         Q_ENUM(Priority)
         static int priorityToInt(Priority value);
 

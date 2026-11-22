@@ -53,7 +53,10 @@ using namespace Qt::StringLiterals;
 namespace tremotesf {
     namespace {
         constexpr std::array priorityComboBoxItems{
-            TorrentData::Priority::High, TorrentData::Priority::Normal, TorrentData::Priority::Low
+            TorrentData::Priority::High,
+            TorrentData::Priority::Normal,
+            TorrentData::Priority::Low,
+            TorrentData::Priority::Off
         };
     }
 
@@ -298,6 +301,10 @@ namespace tremotesf {
             case TorrentData::Priority::Low:
                 //: Torrent's loading priority
                 priorityComboBox->addItem(qApp->translate("tremotesf", "Low"));
+                break;
+            case TorrentData::Priority::Off:
+                //: Torrent's loading priority
+                priorityComboBox->addItem(qApp->translate("tremotesf", "Off"));
                 break;
             }
         }
