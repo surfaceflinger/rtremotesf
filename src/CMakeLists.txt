@@ -517,9 +517,14 @@ if (BUILD_TESTING)
         ui/screens/torrentproperties/torrentproperties_test.cpp
     )
     add_test(NAME torrentproperties_test COMMAND torrentproperties_test)
+    if(APPLE)
+        set(torrentproperties_test_qpa_platform cocoa)
+    else()
+        set(torrentproperties_test_qpa_platform offscreen)
+    endif()
     set_tests_properties(
         torrentproperties_test
-        PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+        PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=${torrentproperties_test_qpa_platform}"
     )
     target_link_libraries(torrentproperties_test PRIVATE tremotesf_objects Qt::Test)
 endif ()
