@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2015-2025 Alexey Rochev
+// SPDX-FileCopyrightText: 2026 nat <nat@nekopon.pl>
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,7 +23,7 @@ using namespace Qt::StringLiterals;
 namespace tremotesf {
     AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
         //: "About" dialog title
-        setWindowTitle(qApp->translate("tremotesf", "About"));
+        setWindowTitle(qApp->translate("tremotesf", "About %1").arg(TREMOTESF_APP_NAME ""_L1));
 
         auto layout = new QVBoxLayout(this);
 
@@ -38,19 +39,13 @@ namespace tremotesf {
 
         const auto aboutPageTemplate = uR"(
 <p>&#169; 2015-2025 Alexey Rochev &lt;<a href="mailto:equeim@gmail.com">equeim@gmail.com</a>&gt;</p>
+<p>&#169; 2026 nat &lt;<a href="mailto:nat@nekopon.pl">nat@nekopon.pl</a>&gt;</p>
 <p>%1
-<a href="https://github.com/equeim/tremotesf2">https://github.com/equeim/tremotesf2</a></p>
-<p>%2
-<a href="https://www.transifex.com/equeim/tremotesf">https://www.transifex.com/equeim/tremotesf</a></p>
+<a href="https://github.com/surfaceflinger/rtremotesf">https://github.com/surfaceflinger/rtremotesf</a></p>
 )"_s;
 
-        auto aboutPageLabel = new QLabel(
-            aboutPageTemplate.arg(
-                qApp->translate("tremotesf", "Source code:").toHtmlEscaped(),
-                qApp->translate("tremotesf", "Translations:").toHtmlEscaped()
-            ),
-            this
-        );
+        auto aboutPageLabel =
+            new QLabel(aboutPageTemplate.arg(qApp->translate("tremotesf", "Source code:").toHtmlEscaped()), this);
         QObject::connect(aboutPageLabel, &QLabel::linkActivated, this, &QDesktopServices::openUrl);
         aboutPageLayout->addWidget(aboutPageLabel);
 

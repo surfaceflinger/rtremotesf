@@ -71,7 +71,7 @@ namespace {
         if (!client->isConnected()) {
             return false;
         }
-        info().log("Only one instance of Tremotesf can be run at the same time");
+        info().log("Only one instance of rtremotesf can be run at the same time");
         const auto activateOtherInstance = [&client](const QStringList& files, const QStringList& urls) {
             if (files.isEmpty() && urls.isEmpty()) {
                 info().log("Activating other instance");
@@ -195,10 +195,10 @@ int main(int argc, char** argv) {
 
     QTranslator appTranslator;
     if (appTranslator.load(QLocale{}, {}, {}, ":/translations/"_L1)) {
-        info().log("Loaded Tremotesf translation {}", appTranslator.filePath());
+        info().log("Loaded rtremotesf translation {}", appTranslator.filePath());
         qApp->installTranslator(&appTranslator);
     } else {
-        warning().log("Failed to load Tremotesf translation for {}", QLocale{});
+        warning().log("Failed to load rtremotesf translation for {}", QLocale{});
     }
 
     const SaveWindowStateDispatcher saveStateDispatcher{};
