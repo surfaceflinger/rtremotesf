@@ -87,6 +87,13 @@ jobs:
         binary-cache-path: ${{ github.workspace }}\vcpkg_binary_cache
         cache-key-tag: ${{ inputs.arch }}
 
+    - name: Use Visual Studio LLVM for clang-cl
+      if: matrix.toolchain == 'msvc-clang'
+      shell: pwsh
+      run: |
+        $llvm = if ('${{ inputs.arch }}' -eq 'arm64') { $env:llvmArm64 } else { $env:llvmX64 }
+        $llvm | Out-File -FilePath $env:GITHUB_PATH -Append
+
     - name: Build Tremotesf with ${{ matrix.toolchain }} toolchain for ${{ inputs.arch }} architecture
       id: build
       uses: equeim/action-cmake-build@f86986b62f4a9c4d4549351b8d04566368c199dd
