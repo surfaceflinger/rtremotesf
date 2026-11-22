@@ -103,6 +103,7 @@ namespace tremotesf {
         qint64 chunkSize{};
         int chunksHashed{};
         int chunksTotal{};
+        int wantedChunks{};
 
         int state{};
         bool hashing{};

@@ -41,7 +41,6 @@ namespace tremotesf {
         UploadSpeed,
         TotalDownloaded,
         TotalUploaded,
-        Ratio,
         IsMultiFile,
         DownloadDirectory,
         BasePath,
@@ -61,6 +60,7 @@ namespace tremotesf {
         ChunkSize,
         ChunksHashed,
         ChunksTotal,
+        WantedChunks,
         TrackerStats,
 
         Count
@@ -95,8 +95,6 @@ namespace tremotesf {
                 return "d.down.total="_L1;
             case TorrentData::UpdateKey::TotalUploaded:
                 return "d.up.total="_L1;
-            case TorrentData::UpdateKey::Ratio:
-                return "d.ratio="_L1;
             case TorrentData::UpdateKey::IsMultiFile:
                 return "d.is_multi_file="_L1;
             case TorrentData::UpdateKey::DownloadDirectory:
@@ -135,6 +133,8 @@ namespace tremotesf {
                 return "d.chunks_hashed="_L1;
             case TorrentData::UpdateKey::ChunksTotal:
                 return "d.size_chunks="_L1;
+            case TorrentData::UpdateKey::WantedChunks:
+                return "d.wanted_chunks="_L1;
             case TorrentData::UpdateKey::TrackerStats:
                 return "t.multicall=,t.url=,t.group=,t.is_enabled=,t.is_usable=,t.is_busy=,t.scrape_complete=,t.scrape_incomplete=,t.latest_sum_peers=,t.success_time_next=,t.success_counter=,t.failed_counter="_L1;
             case TorrentData::UpdateKey::Count:
@@ -221,9 +221,6 @@ namespace tremotesf {
         case TorrentData::UpdateKey::TotalUploaded:
             setChanged(totalUploaded, value.toLongLong(), changed);
             return;
-        case TorrentData::UpdateKey::Ratio:
-            setChanged(ratio, value.toLongLong() / 1000.0, changed);
-            return;
         case TorrentData::UpdateKey::IsMultiFile:
             setChanged(isMultiFile, value.toBool() || value.toInt() != 0, changed);
             return;
@@ -304,6 +301,9 @@ namespace tremotesf {
         case TorrentData::UpdateKey::ChunksTotal:
             setChanged(chunksTotal, value.toInt(), changed);
             return;
+        case TorrentData::UpdateKey::WantedChunks:
+            setChanged(wantedChunks, value.toInt(), changed);
+            return;
         case TorrentData::UpdateKey::TrackerStats: {
             std::vector<Tracker> newTrackers{};
             int seeders{};
@@ -341,13 +341,24 @@ namespace tremotesf {
             }
         }
         setChanged(downloadDirectory, newDownloadDirectory, changed);
-        setChanged(sizeWhenDone, totalSize, changed);
         setChanged(
             completedSize,
             std::clamp<qint64>(completedSize, 0, totalSize > 0 ? totalSize : completedSize),
             changed
         );
-        setChanged(percentDone, totalSize > 0 ? static_cast<double>(completedSize) / totalSize : 0.0, changed);
+        // d.left_bytes covers the whole torrent, including files turned off.
+        // Clamp it to the chunks rtorrent still wants, so partially selected
+        // torrents report their real remaining size.
+        const auto wantedLeft = chunkSize > 0 ? static_cast<qint64>(wantedChunks) * chunkSize : leftUntilDone;
+        setChanged(leftUntilDone, std::min(leftUntilDone, wantedLeft), changed);
+        const auto newSizeWhenDone = completedSize + leftUntilDone;
+        setChanged(sizeWhenDone, newSizeWhenDone, changed);
+        setChanged(
+            percentDone,
+            newSizeWhenDone > 0 ? static_cast<double>(completedSize) / newSizeWhenDone : 0.0,
+            changed
+        );
+        setChanged(ratio, totalDownloaded > 0 ? static_cast<double>(totalUploaded) / totalDownloaded : 0.0, changed);
         setChanged(metadataComplete, !isMeta, changed);
         setChanged(magnetLink, "magnet:?xt=urn:btih:"_L1 + hashString, changed);
 
@@ -356,7 +367,7 @@ namespace tremotesf {
             newStatus = Status::Checking;
         } else if (state == 0) {
             newStatus = Status::Paused;
-        } else if (complete) {
+        } else if (complete || (wantedChunks == 0 && chunkSize > 0 && sizeWhenDone > 0)) {
             newStatus = Status::Seeding;
         } else {
             newStatus = Status::Downloading;
@@ -366,8 +377,10 @@ namespace tremotesf {
         Error newError{};
         if (hashingFailed) {
             newError = Error::LocalError;
-        } else if (!errorString.isEmpty()) {
+        } else if (errorString.startsWith("Tracker:"_L1)) {
             newError = Error::TrackerError;
+        } else if (!errorString.isEmpty()) {
+            newError = Error::LocalError;
         }
         setChanged(error, newError, changed);
 
