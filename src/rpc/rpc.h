@@ -218,9 +218,6 @@ namespace tremotesf {
         Coroutine<> autoReconnect();
 
         impl::RequestRouter* mRequestRouter{};
-        CoroutineScope mBackgroundRequestsCoroutineScope{};
-        CoroutineScope mAutoReconnectCoroutineScope{};
-        CoroutineScope mDeletingFilesCoroutineScope{};
 
         bool mAutoReconnectEnabled{};
 
@@ -235,6 +232,11 @@ namespace tremotesf {
         int mNextTorrentId{};
 
         Status mStatus{};
+
+        // Coroutine scopes must be destroyed before the data they use.
+        CoroutineScope mBackgroundRequestsCoroutineScope{};
+        CoroutineScope mAutoReconnectCoroutineScope{};
+        CoroutineScope mDeletingFilesCoroutineScope{};
 
     signals:
         void aboutToDisconnect();
