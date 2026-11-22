@@ -5,10 +5,10 @@
 include("../CPackCommon.cmake")
 
 set(CPACK_GENERATOR ZIP WIX)
-set(CPACK_PACKAGE_NAME "rtremotesf")
-set(CPACK_PACKAGE_VENDOR "rtremotesf")
+set(CPACK_PACKAGE_NAME "Rtremotesf")
+set(CPACK_PACKAGE_VENDOR "Rtremotesf")
 set(CPACK_PACKAGE_EXECUTABLES "rtremotesf;rtremotesf")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "rtremotesf")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Rtremotesf")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/license.rtf")
 set(CPACK_WIX_VERSION 4)
 set(CPACK_WIX_INSTALL_SCOPE perMachine)

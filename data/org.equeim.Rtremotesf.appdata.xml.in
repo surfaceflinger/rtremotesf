@@ -11,13 +11,13 @@ SPDX-License-Identifier: CC0-1.0
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0+</project_license>
 
-  <name>rtremotesf</name>
+  <name>Rtremotesf</name>
   <summary>Remote GUI for rtorrent BitTorrent client</summary>
 
   <description>
     <p>
-      rtremotesf is a remote GUI for rtorrent BitTorrent client. You can fully control your rtorrent instance,
-      manage torrents, configure its settings, view server statistics. rtremotesf talks to rtorrent's XML-RPC
+      Rtremotesf is a remote GUI for rtorrent BitTorrent client. You can fully control your rtorrent instance,
+      manage torrents, configure its settings, view server statistics. Rtremotesf talks to rtorrent's XML-RPC
       interface over SCGI.
     </p>
     <p>

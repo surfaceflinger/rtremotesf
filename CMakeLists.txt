@@ -15,7 +15,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "${TREMOTESF_MACOS_DEPLOYMENT_TARGET}")
 endif ()
 
-project(tremotesf VERSION 2.10.1 LANGUAGES ${languages})
+project(Rtremotesf VERSION 2.10.1 LANGUAGES ${languages})
 
 option(TREMOTESF_ASAN "Build with AddressSanitizer" OFF)
 
@@ -29,7 +29,7 @@ include(cmake/CommonOptions.cmake)
 find_package(Qt6 ${TREMOTESF_MINIMUM_QT_VERSION} REQUIRED COMPONENTS Core)
 
 if (APPLE)
-    set(TREMOTESF_MACOS_BUNDLE_NAME "rtremotesf")
+    set(TREMOTESF_MACOS_BUNDLE_NAME "Rtremotesf")
     set(TREMOTESF_EXTERNAL_RESOURCES_PATH "${TREMOTESF_MACOS_BUNDLE_NAME}.app/Contents/Resources")
 elseif (WIN32)
     set(TREMOTESF_EXTERNAL_RESOURCES_PATH ".")

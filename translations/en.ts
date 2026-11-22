@@ -1072,13 +1072,13 @@ Trackers list column title</extracomment>
     </message>
     <message>
         <location filename="../src/ui/screens/mainwindow/mainwindow.cpp" line="382"/>
-        <source>&amp;Show rtremotesf</source>
-        <translation>&amp;Show rtremotesf</translation>
+        <source>&amp;Show Rtremotesf</source>
+        <translation>&amp;Show Rtremotesf</translation>
     </message>
     <message>
         <location filename="../src/ui/screens/mainwindow/mainwindow.cpp" line="387"/>
-        <source>&amp;Hide rtremotesf</source>
-        <translation>&amp;Hide rtremotesf</translation>
+        <source>&amp;Hide Rtremotesf</source>
+        <translation>&amp;Hide Rtremotesf</translation>
     </message>
     <message>
         <location filename="../src/ui/screens/mainwindow/mainwindow.cpp" line="546"/>
@@ -1370,9 +1370,9 @@ Trackers list column title</extracomment>
     </message>
     <message>
         <location filename="../src/ui/notificationscontroller_freedesktop.cpp" line="131"/>
-        <source>Show rtremotesf</source>
+        <source>Show Rtremotesf</source>
         <extracomment>Button on notification</extracomment>
-        <translation>Show rtremotesf</translation>
+        <translation>Show Rtremotesf</translation>
     </message>
     <message>
         <location filename="../src/ui/screens/mainwindow/statusfiltersmodel.cpp" line="60"/>

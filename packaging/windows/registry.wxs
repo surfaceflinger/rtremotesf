@@ -54,8 +54,8 @@ SPDX-License-Identifier: CC0-1.0
                 </RegistryKey>
 
                 <RegistryKey Root="HKCU" Key="Software\rtremotesf\rtremotesf\Capabilities">
-                    <RegistryValue Type="string" Name="ApplicationName" Value="rtremotesf" />
-                    <RegistryValue Type="string" Name="ApplicationDescription" Value="rtremotesf - Remote GUI for rtorrent" />
+                    <RegistryValue Type="string" Name="ApplicationName" Value="Rtremotesf" />
+                    <RegistryValue Type="string" Name="ApplicationDescription" Value="Rtremotesf - Remote GUI for rtorrent" />
                     <RegistryKey Key="FileAssociations">
                         <RegistryValue Type="string" Name=".torrent" Value="rtremotesf.TorrentFile.1" />
                     </RegistryKey>

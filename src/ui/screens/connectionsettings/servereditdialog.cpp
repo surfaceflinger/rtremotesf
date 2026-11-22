@@ -260,7 +260,7 @@ namespace tremotesf {
         auto socketPathNotice = new QLabel(
             qApp->translate(
                 "tremotesf",
-                "If set, rtremotesf will connect to rtorrent's SCGI Unix socket and ignore the address and port"
+                "If set, Rtremotesf will connect to rtorrent's SCGI Unix socket and ignore the address and port"
             ),
             this
         );

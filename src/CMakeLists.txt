@@ -233,7 +233,7 @@ target_sources(tremotesf_objects
 target_link_libraries(tremotesf_objects PUBLIC cxxopts::cxxopts Threads::Threads fmt::fmt Qt::Core Qt::Network Qt::Widgets KF6::WidgetsAddons)
 
 # We need these as CMake variables for configure_file() call below
-set(TREMOTESF_APP_NAME "rtremotesf")
+set(TREMOTESF_APP_NAME "Rtremotesf")
 set(TREMOTESF_EXECUTABLE_NAME "rtremotesf")
 
 target_compile_definitions(

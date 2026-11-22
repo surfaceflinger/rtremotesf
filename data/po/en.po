@@ -22,8 +22,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: tmp.desktop.in:4 ../org.equeim.Rtremotesf.appdata.xml.in:7
-msgid "rtremotesf"
-msgstr "rtremotesf"
+msgid "Rtremotesf"
+msgstr "Rtremotesf"
 
 #: tmp.desktop.in:5 ../org.equeim.Rtremotesf.appdata.xml.in:8
 msgid "Remote GUI for Transmission BitTorrent client"
@@ -31,24 +31,24 @@ msgstr "Remote GUI for Transmission BitTorrent client"
 
 #: ../org.equeim.Rtremotesf.appdata.xml.in:11
 msgid ""
-"rtremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
+"Rtremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
 "control your transmission-daemon instance, manage torrents, set Transmission"
 " settings, view server statistics."
 msgstr ""
-"rtremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
+"Rtremotesf is a remote GUI for Transmission BitTorrent client. You can fully "
 "control your transmission-daemon instance, manage torrents, set Transmission"
 " settings, view server statistics."
 
 #: ../org.equeim.Rtremotesf.appdata.xml.in:14
 msgid ""
 "You can add several servers profiles and switch between them (only one can "
-"be connected at a time). rtremotesf has support of HTTPS, including self-"
+"be connected at a time). Rtremotesf has support of HTTPS, including self-"
 "signed certificates and client certificate authentication. You can set "
 "mounted directories for servers and quickly open torrents' files and choose "
 "download directory from file dialog."
 msgstr ""
 "You can add several servers profiles and switch between them (only one can "
-"be connected at a time). rtremotesf has support of HTTPS, including self-"
+"be connected at a time). Rtremotesf has support of HTTPS, including self-"
 "signed certificates and client certificate authentication. You can set "
 "mounted directories for servers and quickly open torrents' files and choose "
 "download directory from file dialog."

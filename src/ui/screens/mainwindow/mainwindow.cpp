@@ -300,12 +300,12 @@ namespace tremotesf {
         void updateShowHideAction() {
             QObject::disconnect(&mShowHideAppAction, &QAction::triggered, nullptr, nullptr);
             if (isMainWindowHiddenOrMinimized()) {
-                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Show rtremotesf"));
+                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Show Rtremotesf"));
                 QObject::connect(&mShowHideAppAction, &QAction::triggered, this, [this] {
                     showWindowsOrActivateMainWindow();
                 });
             } else {
-                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Hide rtremotesf"));
+                mShowHideAppAction.setText(qApp->translate("tremotesf", "&Hide Rtremotesf"));
                 QObject::connect(&mShowHideAppAction, &QAction::triggered, this, [this] { hideWindows(); });
             }
         }

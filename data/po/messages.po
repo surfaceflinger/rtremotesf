@@ -1,12 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Alexey Rochev <equeim@gmail.com>
-# This file is distributed under the same license as the rtremotesf package.
+# This file is distributed under the same license as the Rtremotesf package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: rtremotesf\n"
+"Project-Id-Version: Rtremotesf\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-22 02:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: tmp.desktop.in:7 ../org.equeim.Rtremotesf.appdata.xml.in:14
-msgid "rtremotesf"
+msgid "Rtremotesf"
 msgstr ""
 
 #: tmp.desktop.in:8 ../org.equeim.Rtremotesf.appdata.xml.in:15
@@ -27,9 +27,9 @@ msgstr ""
 
 #: ../org.equeim.Rtremotesf.appdata.xml.in:18
 msgid ""
-"rtremotesf is a remote GUI for rtorrent BitTorrent client. You can fully "
+"Rtremotesf is a remote GUI for rtorrent BitTorrent client. You can fully "
 "control your rtorrent instance, manage torrents, configure its settings, "
-"view server statistics. rtremotesf talks to rtorrent's XML-RPC interface "
+"view server statistics. Rtremotesf talks to rtorrent's XML-RPC interface "
 "over SCGI."
 msgstr ""
 

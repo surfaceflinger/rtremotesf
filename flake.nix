@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 {
-  description = "rtremotesf - remote GUI for rtorrent";
+  description = "Rtremotesf - remote GUI for rtorrent";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 

@@ -1,10 +1,10 @@
-# rtremotesf
+# Rtremotesf
 Remote GUI for rtorrent. Supports GNU/Linux, Windows and macOS.
 
 Table of Contents
 =================
 
-   * [rtremotesf](#rtremotesf)
+   * [Rtremotesf](#rtremotesf)
    * [Table of Contents](#table-of-contents)
       * [Connecting to rtorrent](#connecting-to-rtorrent)
       * [Installation](#installation)
@@ -15,7 +15,7 @@ Table of Contents
          * [macOS](#macos)
 
 ## Connecting to rtorrent
-rtremotesf talks to rtorrent's XML-RPC interface directly over SCGI. Enable an SCGI listener in `rtorrent.rc`:
+Rtremotesf talks to rtorrent's XML-RPC interface directly over SCGI. Enable an SCGI listener in `rtorrent.rc`:
 
 ```ini
 # TCP
@@ -26,7 +26,7 @@ network.scgi.open_port = 127.0.0.1:5000
 ```
 
 rtorrent's XML-RPC interface has no authentication or encryption. If it is not bound to a local address,
-protect it with an SSH tunnel, a VPN, or a reverse proxy. In rtremotesf's server settings use the same address and
+protect it with an SSH tunnel, a VPN, or a reverse proxy. In Rtremotesf's server settings use the same address and
 port, or the Unix socket path.
 
 ## Installation
@@ -53,11 +53,11 @@ On GNU/Linux and BSD, also:
 
 On Windows, also:
 - Windows 11 SDK is needed to build
-- Minimum supported OS version to run rtremotesf is Windows 10 1809 (October 2018 Update)
+- Minimum supported OS version to run Rtremotesf is Windows 10 1809 (October 2018 Update)
 
 On macOS, also:
 - Latest Xcode and macOS SDK versions supported by Qt (see [here](https://doc.qt.io/qt-6/macos.html))
-- Minimum supported OS version to run rtremotesf is macOS 12
+- Minimum supported OS version to run Rtremotesf is macOS 12
 
 ### Building
 ```sh
@@ -80,7 +80,7 @@ nix develop
 The package is exposed for every system listed in `lib.systems.flakeExposed`.
 
 ### Windows
-Minimum supported OS version to run rtremotesf is Windows 10 1809 (October 2018 Update).
+Minimum supported OS version to run Rtremotesf is Windows 10 1809 (October 2018 Update).
 
 Build instructions for MSVC toolchain with vcpkg:
 1. Install Visual Studio with 'Desktop development with C++' workload
@@ -101,7 +101,7 @@ cmake --build path\to\build\directory --target package
 ```
 
 ### macOS
-Minimum supported OS version to run rtremotesf is macOS 12.
+Minimum supported OS version to run Rtremotesf is macOS 12.
 
 Build instructions with vcpkg:
 1. Install Xcode

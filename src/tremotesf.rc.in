@@ -33,11 +33,11 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName",      "rtremotesf"
-            VALUE "FileDescription",  "rtremotesf - Remote GUI for rtorrent"
+            VALUE "CompanyName",      "Rtremotesf"
+            VALUE "FileDescription",  "Rtremotesf - Remote GUI for rtorrent"
             VALUE "FileVersion",      "@PROJECT_VERSION@"
             VALUE "InternalName",     "@TREMOTESF_EXECUTABLE_NAME@"
-            VALUE "LegalCopyright",   "Copyright 2015-2025 Alexey Rochev"
+            VALUE "LegalCopyright",   "Copyright 2015-2025 Alexey Rochev; 2026 nat"
             VALUE "OriginalFilename", "@TREMOTESF_EXECUTABLE_NAME@.exe"
             VALUE "ProductName",      "@TREMOTESF_APP_NAME@"
             VALUE "ProductVersion",   "@PROJECT_VERSION@"

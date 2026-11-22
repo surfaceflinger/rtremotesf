@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 ### Changed
-- Tremotesf now controls rtorrent instead of transmission-daemon. It talks to rtorrent's XML-RPC interface
+- Rtremotesf now controls rtorrent instead of transmission-daemon. It talks to rtorrent's XML-RPC interface
   directly over SCGI, using either a TCP port or a Unix socket
 - Renamed the executable, app ID, D-Bus service, desktop/appdata files and icons to rtremotesf so that this fork
   can be installed alongside Tremotesf

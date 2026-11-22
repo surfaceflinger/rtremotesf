@@ -4,7 +4,7 @@
 
 [Desktop Entry]
 Type=Application
-Name=rtremotesf
+Name=Rtremotesf
 Comment=Remote GUI for rtorrent BitTorrent client
 Categories=Network;P2P;
 Icon=rtremotesf
