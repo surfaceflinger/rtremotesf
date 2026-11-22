@@ -144,6 +144,14 @@ private slots:
         QCOMPARE(torrent.data().error, TorrentData::Error::TrackerError);
     }
 
+    void nonListTrackerRowIsIgnored() {
+        Rpc rpc;
+        auto values = torrentValues();
+        values[31] = QString("not a tracker row");
+        Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, values, &rpc);
+        QCOMPARE(torrent.data().trackers.size(), size_t(0));
+    }
+
     void multipleLabelsAreSplit() {
         Rpc rpc;
         auto values = torrentValues();

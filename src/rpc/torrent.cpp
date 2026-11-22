@@ -311,10 +311,11 @@ namespace tremotesf {
             newTrackers.reserve(static_cast<size_t>(rows.size()));
             int trackerId = 0;
             for (const auto& row : rows) {
-                if (row.typeId() != QMetaType::QVariantList) {
+                const auto fields = row.toList();
+                if (fields.isEmpty()) {
                     continue;
                 }
-                newTrackers.emplace_back(trackerId, row.toList());
+                newTrackers.emplace_back(trackerId, fields);
                 seeders += newTrackers.back().seeders();
                 leechers += newTrackers.back().leechers();
                 ++trackerId;
