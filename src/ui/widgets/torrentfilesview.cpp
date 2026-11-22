@@ -116,6 +116,21 @@ namespace tremotesf {
 
         const QModelIndexList sourceIndexes(mProxyModel->sourceIndexes(selectionModel()->selectedRows()));
 
+        QList<QPersistentModelIndex> persistentIndexes{};
+        persistentIndexes.reserve(sourceIndexes.size());
+        for (const auto& index : sourceIndexes) {
+            persistentIndexes.push_back(index);
+        }
+        const auto currentIndexes = [persistentIndexes] {
+            QModelIndexList indexes{};
+            for (const auto& index : persistentIndexes) {
+                if (index.isValid()) {
+                    indexes.push_back(index);
+                }
+            }
+            return indexes;
+        };
+
         QMenu contextMenu;
 
         if (!mLocalFile) {
@@ -136,8 +151,8 @@ namespace tremotesf {
                     qApp->translate("tremotesf", "&Open")
                 );
                 openAction->setEnabled(localOrMounted);
-                QObject::connect(openAction, &QAction::triggered, this, [sourceIndexes, this] {
-                    for (const QModelIndex& index : sourceIndexes) {
+                QObject::connect(openAction, &QAction::triggered, this, [currentIndexes, this] {
+                    for (const QModelIndex& index : currentIndexes()) {
                         desktoputils::openFile(
                             static_cast<const TorrentFilesModel*>(mModel)->localFilePath(index),
                             nativeParentWidget()
@@ -151,10 +166,11 @@ namespace tremotesf {
                     qApp->translate("tremotesf", "Open &Download Directory")
                 );
                 openDownloadDirectoryAction->setEnabled(localOrMounted);
-                QObject::connect(openDownloadDirectoryAction, &QAction::triggered, this, [sourceIndexes, this] {
+                QObject::connect(openDownloadDirectoryAction, &QAction::triggered, this, [currentIndexes, this] {
+                    const auto indexes = currentIndexes();
                     std::vector<QString> files{};
-                    files.reserve(static_cast<size_t>(sourceIndexes.size()));
-                    for (const QModelIndex& index : sourceIndexes) {
+                    files.reserve(static_cast<size_t>(indexes.size()));
+                    for (const QModelIndex& index : indexes) {
                         files.push_back(static_cast<const TorrentFilesModel*>(mModel)->localFilePath(index));
                     }
                     launchFileManagerAndSelectFiles(files, nativeParentWidget());
@@ -169,8 +185,8 @@ namespace tremotesf {
             //: Context menu item to select file for downloading
             qApp->translate("tremotesf", "&Download")
         );
-        QObject::connect(downloadAction, &QAction::triggered, this, [=, this] {
-            mModel->setFilesWanted(sourceIndexes, true);
+        QObject::connect(downloadAction, &QAction::triggered, this, [currentIndexes, this] {
+            mModel->setFilesWanted(currentIndexes(), true);
         });
 
         QAction* notDownloadAction = contextMenu.addAction(
@@ -178,8 +194,8 @@ namespace tremotesf {
             //: Context menu item to unselect file for downloading
             qApp->translate("tremotesf", "&Not Download")
         );
-        QObject::connect(notDownloadAction, &QAction::triggered, this, [=, this] {
-            mModel->setFilesWanted(sourceIndexes, false);
+        QObject::connect(notDownloadAction, &QAction::triggered, this, [currentIndexes, this] {
+            mModel->setFilesWanted(currentIndexes(), false);
         });
 
         contextMenu.addSeparator();
@@ -191,18 +207,18 @@ namespace tremotesf {
         //: File loading priority
         QAction* highPriorityAction = priorityGroup.addAction(qApp->translate("tremotesf", "&High"));
         highPriorityAction->setCheckable(true);
-        QObject::connect(highPriorityAction, &QAction::triggered, this, [=, this](bool checked) {
+        QObject::connect(highPriorityAction, &QAction::triggered, this, [currentIndexes, this](bool checked) {
             if (checked) {
-                mModel->setFilesPriority(sourceIndexes, TorrentFilesModelEntry::Priority::High);
+                mModel->setFilesPriority(currentIndexes(), TorrentFilesModelEntry::Priority::High);
             }
         });
 
         //: File loading priority
         QAction* normalPriorityAction = priorityGroup.addAction(qApp->translate("tremotesf", "&Normal"));
         normalPriorityAction->setCheckable(true);
-        QObject::connect(normalPriorityAction, &QAction::triggered, this, [=, this](bool checked) {
+        QObject::connect(normalPriorityAction, &QAction::triggered, this, [currentIndexes, this](bool checked) {
             if (checked) {
-                mModel->setFilesPriority(sourceIndexes, TorrentFilesModelEntry::Priority::Normal);
+                mModel->setFilesPriority(currentIndexes(), TorrentFilesModelEntry::Priority::Normal);
             }
         });
 
