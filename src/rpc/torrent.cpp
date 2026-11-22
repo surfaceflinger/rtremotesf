@@ -234,12 +234,13 @@ namespace tremotesf {
             setChanged(basePath, normalizePath(value.toString(), rpc->serverSettings()->data().pathOs), changed);
             return;
         case TorrentData::UpdateKey::Labels: {
-            const auto label = value.toString();
-            std::vector<QString> labels{};
-            if (!label.isEmpty()) {
-                labels.push_back(label);
+            std::vector<QString> newLabels{};
+            for (const auto& label : value.toString().split(QLatin1Char('\n'))) {
+                if (!label.isEmpty()) {
+                    newLabels.push_back(label);
+                }
             }
-            setChanged(this->labels, std::move(labels), changed);
+            setChanged(labels, std::move(newLabels), changed);
             return;
         }
         case TorrentData::UpdateKey::ErrorString:

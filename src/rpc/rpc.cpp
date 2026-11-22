@@ -46,6 +46,22 @@ namespace tremotesf {
             return '"' + value + '"';
         }
 
+        // rtorrent has a single custom field for labels, so keep all of them
+        // newline-separated. The label editor only accepts single-line text.
+        QString joinedLabels(std::span<const QString> labels) {
+            QString result{};
+            for (const auto& label : labels) {
+                if (label.isEmpty()) {
+                    continue;
+                }
+                if (!result.isEmpty()) {
+                    result += QLatin1Char('\n');
+                }
+                result += label;
+            }
+            return result;
+        }
+
         Coroutine<> deleteTorrentFile(QString filePath, bool moveToTrash) {
             co_await runOnThreadPool([moveToTrash, filePath = std::move(filePath)] {
                 try {
@@ -396,7 +412,7 @@ namespace tremotesf {
                 parameters.append("d.directory.set="_L1 + quotedRtorrentValue(downloadDirectory));
             }
             if (!labels.empty()) {
-                parameters.append("d.custom1.set="_L1 + quotedRtorrentValue(labels.front()));
+                parameters.append("d.custom1.set="_L1 + quotedRtorrentValue(joinedLabels(labels)));
             }
             parameters.append("d.priority.set="_L1 + QString::number(priority));
             requests.push_back([this, method, parameters = std::move(parameters), link]() -> Coroutine<> {
@@ -424,7 +440,7 @@ namespace tremotesf {
             commands.push_back({"d.directory.set"_L1, {hash, downloadDirectory}});
         }
         if (!labels.empty()) {
-            commands.push_back({"d.custom1.set"_L1, {hash, labels.front()}});
+            commands.push_back({"d.custom1.set"_L1, {hash, joinedLabels(labels)}});
         }
         commands.push_back({"d.priority.set"_L1, {hash, TorrentData::priorityToInt(bandwidthPriority)}});
 
@@ -561,7 +577,7 @@ namespace tremotesf {
     }
 
     void Rpc::setTorrentsLabels(std::span<const int> ids, std::span<const QString> labels) {
-        const auto label = labels.empty() ? QString{} : labels.front();
+        const auto label = joinedLabels(labels);
         std::vector<Command> commands{};
         commands.reserve(ids.size());
         for (const int id : ids) {
