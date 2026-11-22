@@ -72,6 +72,9 @@ namespace tremotesf {
     int TrackersModel::columnCount(const QModelIndex&) const { return QMetaEnum::fromType<Column>().keyCount(); }
 
     QVariant TrackersModel::data(const QModelIndex& index, int role) const {
+        if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(mTrackers.size())) {
+            return {};
+        }
         const auto& tracker = mTrackers.at(static_cast<size_t>(index.row()));
         if (role == Qt::DisplayRole) {
             switch (static_cast<Column>(index.column())) {

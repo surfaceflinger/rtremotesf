@@ -118,6 +118,9 @@ namespace tremotesf {
     }
 
     void TorrentFilesModel::update(std::span<const int> changed) {
+        if (!mTorrent) {
+            return;
+        }
         if (mFiles.size() != mTorrent->files().size()) {
             mCoroutineScope.launch(createTree());
             return;
@@ -133,17 +136,31 @@ namespace tremotesf {
         }
 
         mCreatingTree = true;
-        beginResetModel();
+        resetTree();
 
-        auto [rootEntry, files] = co_await runOnThreadPool(
+        const auto* const torrent = mTorrent;
+        if (!torrent) {
+            mCreatingTree = false;
+            co_return;
+        }
+
+        // Snapshot the files: rtorrent updates can replace the torrent's
+        // file list while the tree is being built on the thread pool.
+        auto files = torrent->files();
+        auto [rootEntry, treeFiles] = co_await runOnThreadPool(
             [](const std::vector<TorrentFile>& files) { return doCreateTree(files); },
-            mTorrent->files()
+            std::move(files)
         );
 
-        mRootEntry = std::move(rootEntry);
-        endResetModel();
+        if (mTorrent != torrent) {
+            mCreatingTree = false;
+            co_return;
+        }
 
-        mFiles = std::move(files);
+        beginResetModel();
+        mRootEntry = std::move(rootEntry);
+        mFiles = std::move(treeFiles);
+        endResetModel();
 
         setLoaded(true);
         mCreatingTree = false;
@@ -153,8 +170,8 @@ namespace tremotesf {
         if (mLoaded) {
             beginResetModel();
             mRootEntry.reset();
-            endResetModel();
             mFiles.clear();
+            endResetModel();
             setLoaded(false);
         }
     }

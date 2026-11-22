@@ -7,6 +7,8 @@
 #include "rpc.h"
 #include "serversettings.h"
 #include "torrent.h"
+#include "ui/screens/torrentproperties/peersmodel.h"
+#include "ui/screens/torrentproperties/trackersmodel.h"
 
 using namespace tremotesf;
 using namespace Qt::StringLiterals;
@@ -154,6 +156,26 @@ private slots:
         const TorrentFile file(QVariantList{QString("file.mkv"), qint64(100), 0, 1, 0}, 100);
         QVERIFY(!file.wanted);
         QCOMPARE(file.priority, TorrentFile::Priority::Normal);
+    }
+
+    void trackersModelIgnoresInvalidIndex() {
+        Rpc rpc;
+        auto values = torrentValues();
+        values.back() = QVariantList{};
+        Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, values, &rpc);
+        TrackersModel model;
+        model.setTorrent(&torrent, false);
+        QVERIFY(!model.data(QModelIndex{}, Qt::DisplayRole).isValid());
+        QVERIFY(!model.data(model.index(0, 0), Qt::DisplayRole).isValid());
+    }
+
+    void peersModelIgnoresInvalidIndex() {
+        Rpc rpc;
+        Torrent torrent(42, "0123456789012345678901234567890123456789"_L1, torrentValues(), &rpc);
+        PeersModel model;
+        model.setTorrent(&torrent, false);
+        QVERIFY(!model.data(QModelIndex{}, Qt::DisplayRole).isValid());
+        QVERIFY(!model.data(model.index(0, 0), Qt::DisplayRole).isValid());
     }
 };
 

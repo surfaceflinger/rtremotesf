@@ -25,7 +25,7 @@ namespace tremotesf {
     int PeersModel::columnCount(const QModelIndex&) const { return QMetaEnum::fromType<Column>().keyCount(); }
 
     QVariant PeersModel::data(const QModelIndex& index, int role) const {
-        if (!index.isValid()) {
+        if (!index.isValid() || index.row() < 0 || index.row() >= static_cast<int>(mPeers.size())) {
             return {};
         }
         const Peer& peer = mPeers.at(static_cast<size_t>(index.row()));

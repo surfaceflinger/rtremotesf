@@ -511,6 +511,17 @@ if (BUILD_TESTING)
     add_executable(torrentfilesmodel_test ui/itemmodels/torrentfilesmodel_test.cpp)
     add_test(NAME torrentfilesmodel_test COMMAND torrentfilesmodel_test)
     target_link_libraries(torrentfilesmodel_test PRIVATE tremotesf_objects Qt::Test)
+
+    add_executable(
+        torrentproperties_test
+        ui/screens/torrentproperties/torrentproperties_test.cpp
+    )
+    add_test(NAME torrentproperties_test COMMAND torrentproperties_test)
+    set_tests_properties(
+        torrentproperties_test
+        PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+    )
+    target_link_libraries(torrentproperties_test PRIVATE tremotesf_objects Qt::Test)
 endif ()
 
 set_common_options_on_targets()
