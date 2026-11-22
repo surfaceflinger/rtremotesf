@@ -530,7 +530,7 @@ namespace tremotesf {
             const auto* const editLabelsAction = mTorrentMenu->addAction(
                 QIcon::fromTheme("tag"_L1),
                 //: Torrent's context menu item
-                qApp->translate("tremotesf", "Edi&t Labels")
+                qApp->translate("tremotesf", "Edi&t Label")
             );
             QObject::connect(editLabelsAction, &QAction::triggered, this, [this] {
                 if (mTorrentsView.selectionModel()->hasSelection()) {

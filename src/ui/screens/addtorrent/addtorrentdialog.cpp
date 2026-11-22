@@ -247,7 +247,7 @@ namespace tremotesf {
             );
         }
 
-        mEditLabelsGroupBox = new QGroupBox(qApp->translate("tremotesf", "Labels"), this);
+        mEditLabelsGroupBox = new QGroupBox(qApp->translate("tremotesf", "Label"), this);
         layout->addRow(mEditLabelsGroupBox);
         auto labelsGroupBoxLayout = new QVBoxLayout(mEditLabelsGroupBox);
         mEditLabelsWidget = new EditLabelsWidget({}, mRpc, this);

@@ -170,7 +170,7 @@ namespace tremotesf {
         labelsView->setIconSize(QSize(16, 16));
         labelsView->setModel(labelsProxyModel);
         //: Torrent's labels
-        infoGroupBoxLayout->addRow(qApp->translate("tremotesf", "Labels:"), labelsView);
+        infoGroupBoxLayout->addRow(qApp->translate("tremotesf", "Label:"), labelsView);
         auto labelsLabel = infoGroupBoxLayout->labelForField(labelsView);
 
         detailsTabLayout->addWidget(infoGroupBox);

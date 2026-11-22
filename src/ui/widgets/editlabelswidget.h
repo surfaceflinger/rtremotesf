@@ -8,7 +8,6 @@
 #include <QWidget>
 
 class QComboBox;
-class QListWidget;
 
 namespace tremotesf {
     class Rpc;
@@ -27,7 +26,6 @@ namespace tremotesf {
         void updateComboBoxLabels();
 
         Rpc* mRpc;
-        QListWidget* mLabelsList{};
         QComboBox* mComboBox{};
     };
 
