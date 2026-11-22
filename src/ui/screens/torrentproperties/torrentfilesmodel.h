@@ -24,6 +24,7 @@ namespace tremotesf {
 
         Torrent* torrent() const;
         void setTorrent(Torrent* torrent, bool oldTorrentDestroyed);
+        void setFilesEnabled(bool enabled);
 
         Rpc* rpc() const;
         void setRpc(Rpc* rpc);

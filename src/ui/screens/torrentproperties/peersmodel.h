@@ -36,6 +36,7 @@ namespace tremotesf {
 
         Torrent* torrent() const;
         void setTorrent(Torrent* torrent, bool oldTorrentDestroyed);
+        void setPeersEnabled(bool enabled);
 
     private:
         void update(

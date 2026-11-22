@@ -123,14 +123,16 @@ namespace tremotesf {
         beginResetModel();
         mPeers.clear();
         if (mTorrent) {
-            if (mTorrent->isPeersEnabled()) {
-                warning().log("{} already has enabled peers, this shouldn't happen", *mTorrent);
-            }
-            mTorrent->setPeersEnabled(true);
             QObject::connect(mTorrent, &Torrent::peersUpdated, this, &PeersModel::update);
             QObject::connect(mTorrent, &QObject::destroyed, this, [this] { setTorrent(nullptr, true); });
         }
         endResetModel();
+    }
+
+    void PeersModel::setPeersEnabled(bool enabled) {
+        if (mTorrent) {
+            mTorrent->setPeersEnabled(enabled);
+        }
     }
 
     void PeersModel::update(

@@ -33,6 +33,7 @@ namespace tremotesf {
         void setupDetailsTab(bool horizontal);
         void setupPeersTab();
         void setupLimitsTab();
+        void updateDataEnabled();
 
         void setTorrent(Torrent* torrent, bool oldTorrentDestroyed);
 
@@ -42,8 +43,10 @@ namespace tremotesf {
         std::function<void()> mUpdateDetailsTab;
         TorrentFilesModel* mFilesModel{};
         TorrentFilesView* mFilesView{};
+        QWidget* mFilesTab{};
         TrackersViewWidget* mTrackersViewWidget{};
         QTreeView* mPeersView{};
+        QWidget* mPeersTab{};
         PeersModel* mPeersModel{};
 
         bool mUpdatingLimits{};

@@ -73,12 +73,15 @@ namespace tremotesf {
         overrideBreezeFramelessScrollAreaHeuristic(mFilesView, true);
         //: Torrent properties dialog tab
         addTab(filesTab, qApp->translate("tremotesf", "Files"));
+        mFilesTab = filesTab;
 
         //: Torrent properties dialog tab
         addTab(mTrackersViewWidget, qApp->translate("tremotesf", "Trackers"));
 
         setupPeersTab();
         setupLimitsTab();
+
+        QObject::connect(this, &QTabWidget::currentChanged, this, [this] { updateDataEnabled(); });
     }
 
     void TorrentPropertiesWidget::saveState() {
@@ -270,6 +273,7 @@ namespace tremotesf {
         peersTabLayout->addWidget(mPeersView);
         //: Torrent's properties dialog tab
         addTab(peersTab, qApp->translate("tremotesf", "Peers"));
+        mPeersTab = peersTab;
     }
 
     void TorrentPropertiesWidget::setupLimitsTab() {
@@ -356,6 +360,14 @@ namespace tremotesf {
 
     void TorrentPropertiesWidget::setTorrent(Torrent* torrent) { setTorrent(torrent, false); }
 
+    void TorrentPropertiesWidget::updateDataEnabled() {
+        if (!mTorrent) {
+            return;
+        }
+        mFilesModel->setFilesEnabled(currentWidget() == mFilesTab);
+        mPeersModel->setPeersEnabled(currentWidget() == mPeersTab);
+    }
+
     void TorrentPropertiesWidget::setTorrent(Torrent* torrent, bool oldTorrentDestroyed) {
         if (torrent == mTorrent) {
             return;
@@ -379,6 +391,7 @@ namespace tremotesf {
         mFilesModel->setTorrent(mTorrent, oldTorrentDestroyed);
         mTrackersViewWidget->setTorrent(mTorrent, oldTorrentDestroyed);
         mPeersModel->setTorrent(mTorrent, oldTorrentDestroyed);
+        updateDataEnabled();
 
         const auto onHasTorrentChanged = [this](bool hasTorrent) {
             setEnabled(hasTorrent);

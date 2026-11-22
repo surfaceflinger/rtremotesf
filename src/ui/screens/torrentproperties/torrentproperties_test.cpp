@@ -11,6 +11,7 @@
 #include "peersmodel.h"
 #include "torrentfilesmodel.h"
 #include "torrentpropertiesdialog.h"
+#include "torrentpropertieswidget.h"
 
 using namespace tremotesf;
 using namespace Qt::StringLiterals;
@@ -103,6 +104,37 @@ private slots:
         }
         QVERIFY(rarbgIndex.isValid());
         QCOMPARE(model.localFilePath(rarbgIndex), "/downloads/test torrent/RARBG.txt"_L1);
+    }
+
+    void loadsFileAndPeerListsOnlyForTheirTabs() {
+        Rpc rpc;
+        auto torrent = makeTorrent(&rpc);
+        TorrentPropertiesWidget widget(&rpc, false);
+        widget.setTorrent(torrent.get());
+        QVERIFY(!torrent->isFilesEnabled());
+        QVERIFY(!torrent->isPeersEnabled());
+
+        int filesIndex = -1;
+        int peersIndex = -1;
+        for (int i = 0; i < widget.count(); ++i) {
+            if (widget.tabText(i) == "Files"_L1) {
+                filesIndex = i;
+            } else if (widget.tabText(i) == "Peers"_L1) {
+                peersIndex = i;
+            }
+        }
+        QVERIFY(filesIndex >= 0);
+        QVERIFY(peersIndex >= 0);
+
+        widget.setCurrentIndex(filesIndex);
+        QVERIFY(torrent->isFilesEnabled());
+        QVERIFY(!torrent->isPeersEnabled());
+        widget.setCurrentIndex(peersIndex);
+        QVERIFY(!torrent->isFilesEnabled());
+        QVERIFY(torrent->isPeersEnabled());
+        widget.setCurrentIndex(0);
+        QVERIFY(!torrent->isFilesEnabled());
+        QVERIFY(!torrent->isPeersEnabled());
     }
 
     void rebuildsTreeWhenFileCountChangesDuringBuild() {
