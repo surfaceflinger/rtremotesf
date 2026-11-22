@@ -483,18 +483,30 @@ namespace tremotesf {
             for (const auto& hash : hashes) {
                 auto basePath = co_await call({"d.base_path.realpath.or_empty"_L1, {hash}});
                 auto directory = co_await call({"d.directory.realpath.or_empty"_L1, {hash}});
-                if (!basePath.success || !directory.success) {
+                auto multiFile = co_await call({"d.is_multi_file"_L1, {hash}});
+                if (!basePath.success || !directory.success || !multiFile.success) {
                     continue;
                 }
                 const auto path = basePath.value.toString();
                 const auto directoryPath = directory.value.toString();
-                if (isSafeToDeletePath(path, directoryPath)) {
+                auto containmentDirectory = directoryPath;
+                if ((multiFile.value.toBool() || multiFile.value.toInt() != 0) && path == directoryPath) {
+                    // For multi-file torrents rtorrent stores the torrent root in both fields.
+                    // Allow deleting that root, but only as a child of its parent directory.
+                    const auto separatorIndex = directoryPath.lastIndexOf(QLatin1Char('/'));
+                    if (separatorIndex <= 0) {
+                        warning().log("Refusing to delete '{}': torrent root has no safe parent directory", path);
+                        continue;
+                    }
+                    containmentDirectory = directoryPath.left(separatorIndex);
+                }
+                if (isSafeToDeletePath(path, containmentDirectory)) {
                     pathsToDelete.push_back(path);
                 } else {
                     warning().log(
                         "Refusing to delete '{}': path is not a safe child of torrent directory '{}'",
                         path,
-                        directoryPath
+                        containmentDirectory
                     );
                 }
             }
