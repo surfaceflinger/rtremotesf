@@ -17,7 +17,7 @@ namespace tremotesf {
         Q_OBJECT
 
     public:
-        enum class Column { Name, Size, ProgressBar, Progress, Priority };
+        enum class Column { Name, Size, ProgressBar, Priority };
         static constexpr auto SortRole = Qt::UserRole;
 
         explicit BaseTorrentFilesModel(std::vector<Column>&& columns, QObject* parent = nullptr);

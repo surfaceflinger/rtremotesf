@@ -39,7 +39,6 @@ namespace tremotesf {
             case Column::UploadSpeed:
                 return formatutils::formatByteSpeed(peer.uploadSpeed);
             case Column::ProgressBar:
-            case Column::Progress:
                 return formatutils::formatProgress(peer.progress);
             case Column::Flags:
                 return peer.flags;
@@ -65,7 +64,6 @@ namespace tremotesf {
             case Column::UploadSpeed:
                 return peer.uploadSpeed;
             case Column::ProgressBar:
-            case Column::Progress:
                 return peer.progress;
             default:
                 return data(index, Qt::DisplayRole);
@@ -93,9 +91,6 @@ namespace tremotesf {
         case Column::ProgressBar:
             //: Peers list column title
             return qApp->translate("tremotesf", "Progress Bar");
-        case Column::Progress:
-            //: Peers list column title
-            return qApp->translate("tremotesf", "Progress");
         case Column::Flags:
             //: Peers list column title
             return qApp->translate("tremotesf", "Flags");

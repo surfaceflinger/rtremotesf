@@ -20,7 +20,7 @@ namespace tremotesf {
         Q_OBJECT
 
     public:
-        enum class Column { Address, DownloadSpeed, UploadSpeed, ProgressBar, Progress, Flags, Client };
+        enum class Column { Address, DownloadSpeed, UploadSpeed, ProgressBar, Flags, Client };
         Q_ENUM(Column)
 
         static constexpr auto SortRole = Qt::UserRole;

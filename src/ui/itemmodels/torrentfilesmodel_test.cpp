@@ -108,9 +108,7 @@ namespace tremotesf {
         Q_OBJECT
     public:
         TestTorrentFilesModel()
-            : BaseTorrentFilesModel(
-                  {Column::Name, Column::Size, Column::ProgressBar, Column::Progress, Column::Priority}
-              ) {}
+            : BaseTorrentFilesModel({Column::Name, Column::Size, Column::ProgressBar, Column::Priority}) {}
 
         struct File {
             QString path;
@@ -828,7 +826,7 @@ namespace tremotesf {
 
             QCOMPARE(data(BaseTorrentFilesModel::Column::Name).toString(), expected.name);
             QCOMPARE(data(BaseTorrentFilesModel::Column::Size).toString(), formatByteSize(expected.size));
-            QCOMPARE(data(BaseTorrentFilesModel::Column::Progress).toString(), formatProgress(expected.progress));
+            QCOMPARE(data(BaseTorrentFilesModel::Column::ProgressBar).toString(), formatProgress(expected.progress));
             QCOMPARE(
                 data(BaseTorrentFilesModel::Column::Name, Qt::CheckStateRole).value<Qt::CheckState>(),
                 expected.checkState

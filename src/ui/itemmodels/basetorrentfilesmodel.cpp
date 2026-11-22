@@ -53,7 +53,6 @@ namespace tremotesf {
             case Column::Size:
                 return formatutils::formatByteSize(entry->size());
             case Column::ProgressBar:
-            case Column::Progress:
                 return formatutils::formatProgress(entry->progress());
             case Column::Priority:
                 return entry->priorityString();
@@ -71,7 +70,6 @@ namespace tremotesf {
             case Column::Size:
                 return entry->size();
             case Column::ProgressBar:
-            case Column::Progress:
                 return entry->progress();
             case Column::Priority:
                 return QVariant::fromValue(entry->priority());
@@ -108,9 +106,6 @@ namespace tremotesf {
         case Column::ProgressBar:
             //: Column title in torrent's file list
             return qApp->translate("tremotesf", "Progress Bar");
-        case Column::Progress:
-            //: Column title in torrent's file list
-            return qApp->translate("tremotesf", "Progress");
         case Column::Priority:
             //: Column title in torrent's file list
             return qApp->translate("tremotesf", "Priority");
