@@ -188,6 +188,7 @@ namespace tremotesf {
             bool start,
             std::vector<QString> labels
         );
+        Coroutine<> addTorrentLink(QString method, QVariantList parameters, QString link);
         Coroutine<> applyAddedTorrentSettings(
             const QString& hash,
             QString downloadDirectory,
@@ -198,7 +199,9 @@ namespace tremotesf {
             std::span<const QString> labels
         );
         Coroutine<> removeTorrentsImpl(std::vector<QString> hashes, bool deleteFiles);
+        Coroutine<> getTorrentFile(QString hash, QStringList fields);
         Coroutine<> getTorrentsFiles(std::vector<QString> hashes);
+        Coroutine<> getTorrentPeer(QString hash, QStringList fields);
         Coroutine<> getTorrentsPeers(std::vector<QString> hashes);
         Coroutine<> shutdownServerImpl();
 

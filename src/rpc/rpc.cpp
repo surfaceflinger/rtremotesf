@@ -415,15 +415,17 @@ namespace tremotesf {
                 parameters.append("d.custom1.set="_L1 + quotedRtorrentValue(joinedLabels(labels)));
             }
             parameters.append("d.priority.set="_L1 + QString::number(priority));
-            requests.push_back([this, method, parameters = std::move(parameters), link]() -> Coroutine<> {
-                auto response = co_await call({method, parameters});
-                if (!response.success) {
-                    emit torrentAddError(link);
-                }
-            }());
+            requests.push_back(addTorrentLink(method, std::move(parameters), link));
         }
         co_await waitAll(std::move(requests));
         mBackgroundRequestsCoroutineScope.launch(updateData());
+    }
+
+    Coroutine<> Rpc::addTorrentLink(QString method, QVariantList parameters, QString link) {
+        const auto response = co_await call(Command{std::move(method), std::move(parameters)});
+        if (!response.success) {
+            emit torrentAddError(link);
+        }
     }
 
     Coroutine<> Rpc::applyAddedTorrentSettings(
@@ -658,6 +660,20 @@ namespace tremotesf {
         }
     }
 
+    Coroutine<> Rpc::getTorrentFile(QString hash, QStringList fields) {
+        QVariantList parameters{hash, QString{}};
+        for (const auto& field : fields) {
+            parameters.append(field);
+        }
+        const auto response = co_await call({"f.multicall"_L1, std::move(parameters)});
+        if (!response.success) {
+            co_return;
+        }
+        if (auto torrent = torrentByHash(hash); torrent && torrent->isFilesEnabled()) {
+            torrent->updateFiles(response.value.toList());
+        }
+    }
+
     Coroutine<> Rpc::getTorrentsFiles(std::vector<QString> hashes) {
         const QStringList fields{
             "f.path="_L1,
@@ -670,19 +686,7 @@ namespace tremotesf {
         std::vector<Coroutine<>> requests{};
         requests.reserve(hashes.size());
         for (const auto& hash : hashes) {
-            requests.push_back([this, hash, fields]() -> Coroutine<> {
-                QVariantList parameters{hash, QString{}};
-                for (const auto& field : fields) {
-                    parameters.append(field);
-                }
-                const auto response = co_await call({"f.multicall"_L1, std::move(parameters)});
-                if (!response.success) {
-                    co_return;
-                }
-                if (auto torrent = torrentByHash(hash); torrent && torrent->isFilesEnabled()) {
-                    torrent->updateFiles(response.value.toList());
-                }
-            }());
+            requests.push_back(getTorrentFile(hash, fields));
         }
         co_await waitAll(std::move(requests));
     }
@@ -691,6 +695,20 @@ namespace tremotesf {
         const auto torrent = torrentById(torrentId);
         if (isConnected() && torrent) {
             mBackgroundRequestsCoroutineScope.launch(getTorrentsPeers({torrent->data().hashString}));
+        }
+    }
+
+    Coroutine<> Rpc::getTorrentPeer(QString hash, QStringList fields) {
+        QVariantList parameters{hash, QString{}};
+        for (const auto& field : fields) {
+            parameters.append(field);
+        }
+        const auto response = co_await call({"p.multicall"_L1, std::move(parameters)});
+        if (!response.success) {
+            co_return;
+        }
+        if (auto torrent = torrentByHash(hash); torrent && torrent->isPeersEnabled()) {
+            torrent->updatePeers(response.value.toList());
         }
     }
 
@@ -710,19 +728,7 @@ namespace tremotesf {
         std::vector<Coroutine<>> requests{};
         requests.reserve(hashes.size());
         for (const auto& hash : hashes) {
-            requests.push_back([this, hash, fields]() -> Coroutine<> {
-                QVariantList parameters{hash, QString{}};
-                for (const auto& field : fields) {
-                    parameters.append(field);
-                }
-                const auto response = co_await call({"p.multicall"_L1, std::move(parameters)});
-                if (!response.success) {
-                    co_return;
-                }
-                if (auto torrent = torrentByHash(hash); torrent && torrent->isPeersEnabled()) {
-                    torrent->updatePeers(response.value.toList());
-                }
-            }());
+            requests.push_back(getTorrentPeer(hash, fields));
         }
         co_await waitAll(std::move(requests));
     }
