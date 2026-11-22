@@ -224,7 +224,7 @@ namespace tremotesf {
         commands.reserve(ids.size());
         for (const int id : ids) {
             if (auto target = targetForTorrent(id); !target.isEmpty()) {
-                commands.push_back({std::move(method), {std::move(target)}});
+                commands.push_back({method, {std::move(target)}});
             }
         }
         return commands;
