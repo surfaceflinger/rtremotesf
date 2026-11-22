@@ -60,16 +60,11 @@ elseif (WIN32 OR APPLE)
 
     install(DIRECTORY "icons/hicolor" DESTINATION "${TREMOTESF_EXTERNAL_RESOURCES_PATH}/icons" PATTERN ".DS_Store" EXCLUDE)
 
-    set(hicolor_download_path "${CMAKE_CURRENT_BINARY_DIR}/hicolor/index.theme")
-    if (NOT EXISTS "${hicolor_download_path}")
-        set(hicolor_url "https://gitlab.freedesktop.org/xdg/default-icon-theme/-/raw/v0.18/index.theme?ref_type=tags&inline=false")
-        download_with_retries(
-            "${hicolor_url}"
-            "${hicolor_download_path}"
-            "SHA256=a02db5e1b203d981701481bbef8b6fae1c576baf34927eecbc0feae0d2cb9bc5"
-        )
-    endif()
-    install(FILES "${hicolor_download_path}" DESTINATION "${TREMOTESF_EXTERNAL_RESOURCES_PATH}/icons/hicolor")
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/icons/hicolor-index.theme"
+        DESTINATION "${TREMOTESF_EXTERNAL_RESOURCES_PATH}/icons/hicolor"
+        RENAME "index.theme"
+    )
 
     set(breeze_download_path "${CMAKE_CURRENT_BINARY_DIR}/breeze.tar.xz")
     set(breeze_version "6.31.0")

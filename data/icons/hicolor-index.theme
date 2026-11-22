@@ -1,0 +1,46 @@
+# SPDX-FileCopyrightText: 2026 nat <nat@nekopon.pl>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+[Icon Theme]
+Name=Hicolor
+Comment=Fallback icon theme
+Hidden=true
+Directories=16x16/apps,22x22/apps,24x24/apps,256x256/apps,32x32/apps,48x48/apps,scalable/apps
+
+[16x16/apps]
+Size=16
+Context=Apps
+Type=Threshold
+
+[22x22/apps]
+Size=22
+Context=Apps
+Type=Threshold
+
+[24x24/apps]
+Size=24
+Context=Apps
+Type=Threshold
+
+[256x256/apps]
+Size=256
+Context=Apps
+Type=Threshold
+
+[32x32/apps]
+Size=32
+Context=Apps
+Type=Threshold
+
+[48x48/apps]
+Size=48
+Context=Apps
+Type=Threshold
+
+[scalable/apps]
+Size=128
+MinSize=1
+MaxSize=512
+Context=Apps
+Type=Scalable
